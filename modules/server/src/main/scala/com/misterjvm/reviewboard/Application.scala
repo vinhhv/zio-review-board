@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard
 
-import com.misterjvm.reviewboard.http.controllers.HealthController
+import com.misterjvm.reviewboard.http.HttpAPI
+import com.misterjvm.reviewboard.http.controllers.{HealthController, ProgramController}
 import sttp.tapir.*
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*
@@ -9,11 +10,11 @@ import zio.http.Server
 object Application extends ZIOAppDefault {
 
   val serverProgram = for {
-    controller <- HealthController.makeZIO
+    endpoints <- HttpAPI.endpointsZIO
     _ <- Server.serve(
       ZioHttpInterpreter(
         ZioHttpServerOptions.default
-      ).toHttp(controller.health)
+      ).toHttp(endpoints)
     )
     _ <- Console.printLine("Mister JVM!")
   } yield ()
