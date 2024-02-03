@@ -13,10 +13,35 @@ import zio.*
 import zio.json.*
 import zio.test.*
 import sttp.tapir.server.ServerEndpoint
+import com.misterjvm.reviewboard.services.ProgramService
 
 object ProgramControllerSpec extends ZIOSpecDefault {
 
   private given zioME: MonadError[Task] = new RIOMonadError[Any]
+
+  private val pjf =
+    Program(1, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", ProgramType.LifetimeAccess)
+
+  private val serviceStub = new ProgramService {
+    override def create(request: CreateProgramRequest): Task[Program] =
+      ZIO.succeed(request.toProgram(1L))
+
+    override def getAll: Task[List[Program]] =
+      ZIO.succeed(List(pjf))
+
+    override def getById(id: Long): Task[Option[Program]] =
+      ZIO.succeed {
+        if (id == 1L) Some(pjf)
+        else None
+      }
+
+    override def getBySlug(slug: String): Task[Option[Program]] =
+      ZIO.succeed {
+        if (slug == pjf.slug) Some(pjf)
+        else None
+      }
+
+  }
 
   private def backendStubZIO(endpointF: ProgramController => ServerEndpoint[Any, Task]) =
     for {
@@ -37,14 +62,18 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           backendStub <- backendStubZIO(_.create)
           response <- basicRequest
             .post(uri"/programs")
-            .body(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess).toJson)
+            .body(
+              CreateProgramRequest("PJF Performance", "pjf.com", "Paul J. Fabritz", ProgramType.LifetimeAccess).toJson
+            )
             .send(backendStub)
         } yield response.body
         // inspect http response
         program.assert("creates a new Program") { respBody =>
           respBody.toOption
             .flatMap(_.fromJson[Program].toOption)
-            .contains(Program(1, "pjf-performance", "PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess))
+            .contains(
+              Program(1, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", ProgramType.LifetimeAccess)
+            )
         }
       },
       test("GET /programs") {
@@ -54,10 +83,10 @@ object ProgramControllerSpec extends ZIOSpecDefault {
             .get(uri"/programs")
             .send(backendStub)
         } yield response.body
-        program.assert("returns an empty list") { respBody =>
+        program.assert("returns a list with 1 value") { respBody =>
           respBody.toOption
             .flatMap(_.fromJson[List[Program]].toOption)
-            .contains(List())
+            .contains(List(pjf))
         }
       },
       test("GET /programs/:id") {
@@ -67,11 +96,11 @@ object ProgramControllerSpec extends ZIOSpecDefault {
             .get(uri"/programs/1")
             .send(backendStub)
         } yield response.body
-        program.assert("returns nothing") { respBody =>
+        program.assert("returns Program with ID 1") { respBody =>
           respBody.toOption
             .flatMap(_.fromJson[Program].toOption)
-            .isEmpty
+            .contains(pjf)
         }
       }
-    )
+    ).provide(ZLayer.succeed(serviceStub))
 }
