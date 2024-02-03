@@ -2,7 +2,8 @@ package com.misterjvm.reviewboard
 
 import com.misterjvm.reviewboard.http.HttpAPI
 import com.misterjvm.reviewboard.http.controllers.{HealthController, ProgramController}
-import com.misterjvm.reviewboard.services.ProgramService
+import com.misterjvm.reviewboard.repositories.{ProgramRepositoryLive, Repository}
+import com.misterjvm.reviewboard.services.ProgramServiceLive
 import sttp.tapir.*
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*
@@ -23,6 +24,11 @@ object Application extends ZIOAppDefault {
   override def run =
     serverProgram.provide(
       Server.default,
-      ProgramService.dummyLayer
+      // services
+      ProgramServiceLive.layer,
+      // repos
+      ProgramRepositoryLive.layer,
+      // other requirements
+      Repository.dataLayer
     )
 }
