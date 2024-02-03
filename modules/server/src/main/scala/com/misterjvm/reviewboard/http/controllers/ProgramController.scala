@@ -7,17 +7,15 @@ import zio.*
 
 import scala.collection.mutable
 
-class ProgramController private extends BaseController with ProgramEndpoints {
+class ProgramController extends BaseController with ProgramEndpoints {
   // TODO implementations
   // in-memory "database"
-  val db = mutable.Map[Long, Program](
-    -1L -> Program(-1L, "invalid", "Invalid", "invalid.com", "trainer", ProgramType.LifetimeAccess)
-  )
+  val db = mutable.Map[Long, Program]()
 
   // create
   val create: ServerEndpoint[Any, Task] = createEndpoint.serverLogicSuccess { request =>
     ZIO.succeed {
-      val newId      = db.keys.max + 1
+      val newId      = db.keys.maxOption.getOrElse(0L) + 1
       val newProgram = request.toProgram(newId)
       db += (newId -> newProgram)
       newProgram
