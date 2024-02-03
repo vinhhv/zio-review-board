@@ -1,5 +1,6 @@
 package com.misterjvm.reviewboard.domain.data
 
+import com.misterjvm.reviewboard.domain.data.ProgramType
 import zio.json.{DeriveJsonCodec, JsonCodec}
 
 final case class Program(

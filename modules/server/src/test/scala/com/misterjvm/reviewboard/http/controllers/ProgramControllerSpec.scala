@@ -2,18 +2,18 @@ package com.misterjvm.reviewboard.http.controllers
 
 import com.misterjvm.reviewboard.domain.data.{Program, ProgramType}
 import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
+import com.misterjvm.reviewboard.services.ProgramService
 import com.misterjvm.reviewboard.syntax.*
 import sttp.client3.*
 import sttp.client3.testing.SttpBackendStub
 import sttp.monad.MonadError
 import sttp.tapir.generic.auto.*
+import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.stub.TapirStubInterpreter
 import sttp.tapir.ztapir.RIOMonadError
 import zio.*
 import zio.json.*
 import zio.test.*
-import sttp.tapir.server.ServerEndpoint
-import com.misterjvm.reviewboard.services.ProgramService
 
 object ProgramControllerSpec extends ZIOSpecDefault {
 
