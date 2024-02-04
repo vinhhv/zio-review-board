@@ -62,7 +62,7 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("getById") {
         val programZIO = for {
           program <- service(
-            _.create((CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess)))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess))
           )
           programOpt <- service(_.getById(program.id))
         } yield (program, programOpt)
@@ -79,7 +79,7 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("getBySlug") {
         val programZIO = for {
           program <- service(
-            _.create((CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess)))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess))
           )
           programOpt <- service(_.getBySlug(program.slug))
         } yield (program, programOpt)
@@ -96,10 +96,10 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("get") {
         val programZIO = for {
           program <- service(
-            _.create((CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess)))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess))
           )
           program2 <- service(
-            _.create((CreateProgramRequest("PJF Performance2", "pjf2.com", "Paul2", ProgramType.Subscription)))
+            _.create(CreateProgramRequest("PJF Performance2", "pjf2.com", "Paul2", ProgramType.Subscription))
           )
           programs <- service(_.getAll)
         } yield (program, program2, programs)
