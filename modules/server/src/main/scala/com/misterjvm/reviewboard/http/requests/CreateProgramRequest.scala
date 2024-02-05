@@ -6,13 +6,13 @@ import zio.json.{DeriveJsonCodec, JsonCodec}
 final case class CreateProgramRequest(
     name: String,
     url: String,
-    trainer: String,
+    trainerId: Long,
     paymentType: PaymentType,
     image: Option[String] = None,
     tags: Option[List[String]] = None
 ) {
   def toProgram(id: Long) =
-    Program(id, Program.makeSlug(name), name, url, trainer, paymentType, image, tags.getOrElse(List()))
+    Program(id, Program.makeSlug(name), name, url, trainerId, paymentType, image, tags.getOrElse(List()))
 }
 
 object CreateProgramRequest {

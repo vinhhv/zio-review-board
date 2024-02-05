@@ -17,14 +17,14 @@ trait RepositorySpec {
       slug        <- Gen.stringN(8)(Gen.alphaNumericChar)
       name        <- Gen.stringN(8)(Gen.alphaNumericChar)
       url         <- Gen.stringN(16)(Gen.alphaNumericChar)
-      trainer     <- Gen.stringN(8)(Gen.alphaNumericChar)
+      trainerId   <- Gen.long
       paymentType <- Gen.fromIterable(PaymentType.values)
     } yield Program(
       id = -1L,
       slug = slug,
       name = name,
       url = url,
-      trainer = trainer,
+      trainerId = trainerId,
       paymentType = paymentType
     )
 

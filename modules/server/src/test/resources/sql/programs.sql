@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS programs (
   slug TEXT UNIQUE NOT NULL,
   name TEXT UNIQUE NOT NULL,
   url TEXT UNIQUE NOT NULL,
-  trainer TEXT NOT NULL,
+  trainer_id BIGINT NOT NULL,
   payment_type payment_type NOT NULL,
   image TEXT,
   tags TEXT[]
