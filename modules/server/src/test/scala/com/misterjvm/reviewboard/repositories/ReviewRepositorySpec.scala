@@ -82,7 +82,7 @@ object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec {
           reviewGood         <- repo.create(goodReview)
           reviewBad          <- repo.create(badReview)
           reviewsByProgramId <- repo.getByProgramId(reviewGood.programId)
-          reviewsByUserId    <- repo.getByProgramId(reviewBad.programId)
+          reviewsByUserId    <- repo.getByUserId(reviewBad.userId)
         } yield assertTrue(
           reviewsByProgramId.toSet == Set(reviewGood, reviewBad) &&
             reviewsByUserId.toSet == Set(reviewGood, reviewBad)

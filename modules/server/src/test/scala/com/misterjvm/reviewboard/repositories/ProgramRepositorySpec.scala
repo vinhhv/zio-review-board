@@ -8,7 +8,7 @@ import zio.test.*
 import java.sql.SQLException
 
 object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec {
-  private val pjf = Program(1L, "pjf-performance", "PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess)
+  private val pjf = Program(1L, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess)
 
   override val initScript: String = "sql/programs.sql"
 
@@ -21,7 +21,7 @@ object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec {
         } yield program
 
         program.assert {
-          case Program(_, "pjf-performance", "PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess, _, _) =>
+          case Program(_, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess, _, _) =>
             true
           case _ => false
         }

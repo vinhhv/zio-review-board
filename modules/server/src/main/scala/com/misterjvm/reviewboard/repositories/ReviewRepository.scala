@@ -1,32 +1,53 @@
 package com.misterjvm.reviewboard.repositories
 
-import com.misterjvm.reviewboard.domain.data.Review
-import zio.*
+import com.misterjvm.reviewboard.domain.data.{MetricScore, Review}
 import io.getquill.*
 import io.getquill.jdbczio.Quill
+import zio.*
 
 trait ReviewRepository {
   def create(review: Review): Task[Review]
   def getById(id: Long): Task[Option[Review]]
-  def getByProgramId(id: Long): Task[List[Review]]
+  def getByProgramId(programId: Long): Task[List[Review]]
   def getByUserId(userId: Long): Task[List[Review]]
   def update(id: Long, op: Review => Review): Task[Review]
   def delete(id: Long): Task[Review]
 }
 
 class ReviewRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends ReviewRepository {
+  import quill.*
 
-  override def getByProgramId(id: Long): Task[List[Review]] = ???
+  inline given schema: SchemaMeta[Review]  = schemaMeta[Review]("reviews")
+  inline given insMeta: InsertMeta[Review] = insertMeta[Review](_.id, _.created, _.updated)
+  inline given upMeta: UpdateMeta[Review]  = updateMeta[Review](_.id, _.programId, _.userId, _.created)
 
-  override def getById(id: Long): Task[Option[Review]] = ???
+  private given Encoder[MetricScore] = encoder(
+    java.sql.Types.OTHER,
+    (index, value, row) => row.setObject(index, value.toString, java.sql.Types.OTHER)
+  )
 
-  override def getByUserId(userId: Long): Task[List[Review]] = ???
+  private given Decoder[MetricScore] = decoder(row => index => MetricScore.valueOf(row.getObject(index).toString))
 
-  override def delete(id: Long): Task[Review] = ???
+  override def create(review: Review): Task[Review] =
+    run(query[Review].insertValue(lift(review)).returning(r => r))
 
-  override def create(review: Review): Task[Review] = ???
+  override def getById(id: Long): Task[Option[Review]] =
+    run(query[Review].filter(_.id == lift(id))).map(_.headOption)
 
-  override def update(id: Long, op: Review => Review): Task[Review] = ???
+  override def getByProgramId(programId: Long): Task[List[Review]] =
+    run(query[Review].filter(_.programId == lift(programId)))
+
+  override def getByUserId(userId: Long): Task[List[Review]] =
+    run(query[Review].filter(_.userId == lift(userId)))
+
+  override def update(id: Long, op: Review => Review): Task[Review] =
+    for {
+      current <- getById(id).someOrFail(new RuntimeException(s"Update review failed: missing ID $id"))
+      updated <- run(query[Review].filter(_.id == lift(id)).updateValue(lift(op(current))).returning(r => r))
+    } yield updated
+
+  override def delete(id: Long): Task[Review] =
+    run(query[Review].filter(_.id == lift(id)).delete.returning(r => r))
 
 }
 

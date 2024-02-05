@@ -19,7 +19,7 @@ class ProgramRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends P
 
   inline given schema: SchemaMeta[Program]  = schemaMeta[Program]("programs")
   inline given insMeta: InsertMeta[Program] = insertMeta[Program](_.id)
-  inline given upMeta: UpdateMeta[Program]  = updateMeta[Program](_.id)
+  inline given upMeta: UpdateMeta[Program]  = updateMeta[Program](_.id, _.trainerId)
 
   private given Encoder[PaymentType] = encoder(
     java.sql.Types.OTHER,

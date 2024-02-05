@@ -15,3 +15,16 @@ CREATE TABLE IF NOT EXISTS reviews (
     created TIMESTAMP NOT NULL DEFAULT now(),
     updated TIMESTAMP NOT NULL DEFAULT now()
 );
+
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated = now(); 
+    RETURN NEW; 
+END
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_updated_column_before_update
+BEFORE UPDATE ON reviews
+FOR EACH ROW
+EXECUTE FUNCTION update_modified_column();
