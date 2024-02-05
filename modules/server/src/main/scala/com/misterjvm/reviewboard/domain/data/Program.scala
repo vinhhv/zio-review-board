@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.domain.data
 
-import com.misterjvm.reviewboard.domain.data.ProgramType
+import com.misterjvm.reviewboard.domain.data.PaymentType
 import zio.json.{DeriveJsonCodec, JsonCodec}
 
 final case class Program(
@@ -9,7 +9,7 @@ final case class Program(
     name: String, // "PJF Performance Ball Handling Code" -> hoops.com/programs/pjf-performance-ball-handling-code
     url: String,
     trainer: String, // Paul J. Fabritz
-    programType: ProgramType,
+    paymentType: PaymentType,
     image: Option[String] = None,
     tags: List[String] = List()
 )

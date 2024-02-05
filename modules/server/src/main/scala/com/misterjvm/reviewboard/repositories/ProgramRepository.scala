@@ -14,19 +14,19 @@ trait ProgramRepository {
   def delete(id: Long): Task[Program]
 }
 
-class ProgramRepositoryLive(quill: Quill.Postgres[SnakeCase]) extends ProgramRepository {
+class ProgramRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends ProgramRepository {
   import quill.*
 
   inline given schema: SchemaMeta[Program]  = schemaMeta[Program]("programs")
   inline given insMeta: InsertMeta[Program] = insertMeta[Program](_.id)
   inline given upMeta: UpdateMeta[Program]  = updateMeta[Program](_.id)
 
-  private given Encoder[ProgramType] = encoder(
+  private given Encoder[PaymentType] = encoder(
     java.sql.Types.OTHER,
     (index, value, row) => row.setObject(index, value.toString, java.sql.Types.OTHER)
   )
 
-  private given Decoder[ProgramType] = decoder(row => index => ProgramType.valueOf(row.getObject(index).toString))
+  private given Decoder[PaymentType] = decoder(row => index => PaymentType.valueOf(row.getObject(index).toString))
 
   def create(program: Program): Task[Program] =
     run {
@@ -79,7 +79,7 @@ object ProgramRepositoryDemo extends ZIOAppDefault {
   val program = for {
     repo <- ZIO.service[ProgramRepository]
     // _ <- repo.create(
-    //   Program(-1L, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", ProgramType.LifetimeAccess)
+    //   Program(-1L, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", PaymentType.LifetimeAccess)
     // )
     programs <- repo.get
     _        <- Console.printLine(programs)

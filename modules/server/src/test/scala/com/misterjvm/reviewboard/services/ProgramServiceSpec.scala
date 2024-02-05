@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.services
 
-import com.misterjvm.reviewboard.domain.data.{Program, ProgramType}
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import com.misterjvm.reviewboard.repositories.ProgramRepository
 import com.misterjvm.reviewboard.syntax.*
@@ -52,7 +52,7 @@ object ProgramServiceSpec extends ZIOSpecDefault {
     suite("ProgramServiceSpec")(
       test("create") {
         val programZIO =
-          service(_.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess)))
+          service(_.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess)))
         programZIO.assert { program =>
           program.name == "PJF Performance" &&
           program.url == "pjf.com" &&
@@ -62,7 +62,7 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("getById") {
         val programZIO = for {
           program <- service(
-            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess))
           )
           programOpt <- service(_.getById(program.id))
         } yield (program, programOpt)
@@ -79,7 +79,7 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("getBySlug") {
         val programZIO = for {
           program <- service(
-            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess))
           )
           programOpt <- service(_.getBySlug(program.slug))
         } yield (program, programOpt)
@@ -96,10 +96,10 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("get") {
         val programZIO = for {
           program <- service(
-            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess))
           )
           program2 <- service(
-            _.create(CreateProgramRequest("PJF Performance2", "pjf2.com", "Paul2", ProgramType.Subscription))
+            _.create(CreateProgramRequest("PJF Performance2", "pjf2.com", "Paul2", PaymentType.Subscription))
           )
           programs <- service(_.getAll)
         } yield (program, program2, programs)

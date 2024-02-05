@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.repositories
 
-import com.misterjvm.reviewboard.domain.data.{Program, ProgramType}
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 import com.misterjvm.reviewboard.syntax.*
 import zio.*
 import zio.test.*
@@ -8,7 +8,9 @@ import zio.test.*
 import java.sql.SQLException
 
 object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec {
-  private val pjf = Program(1L, "pjf-performance", "PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess)
+  private val pjf = Program(1L, "pjf-performance", "PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess)
+
+  override val initScript: String = "sql/programs.sql"
 
   override def spec: Spec[TestEnvironment & Scope, Any] =
     suite("ProgramRepositorySpec")(
@@ -19,7 +21,7 @@ object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec {
         } yield program
 
         program.assert {
-          case Program(_, "pjf-performance", "PJF Performance", "pjf.com", "Paul", ProgramType.LifetimeAccess, _, _) =>
+          case Program(_, "pjf-performance", "PJF Performance", "pjf.com", "Paul", PaymentType.LifetimeAccess, _, _) =>
             true
           case _ => false
         }

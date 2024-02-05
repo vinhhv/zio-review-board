@@ -1,19 +1,18 @@
 package com.misterjvm.reviewboard.http.requests
 
 import com.misterjvm.reviewboard.domain.data.*
-import zio.json.JsonCodec
-import zio.json.DeriveJsonCodec
+import zio.json.{DeriveJsonCodec, JsonCodec}
 
 final case class CreateProgramRequest(
     name: String,
     url: String,
     trainer: String,
-    programType: ProgramType,
+    paymentType: PaymentType,
     image: Option[String] = None,
     tags: Option[List[String]] = None
 ) {
   def toProgram(id: Long) =
-    Program(id, Program.makeSlug(name), name, url, trainer, programType, image, tags.getOrElse(List()))
+    Program(id, Program.makeSlug(name), name, url, trainer, paymentType, image, tags.getOrElse(List()))
 }
 
 object CreateProgramRequest {

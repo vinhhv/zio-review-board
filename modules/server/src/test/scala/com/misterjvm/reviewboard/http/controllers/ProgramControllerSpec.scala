@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.http.controllers
 
-import com.misterjvm.reviewboard.domain.data.{Program, ProgramType}
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import com.misterjvm.reviewboard.services.ProgramService
 import com.misterjvm.reviewboard.syntax.*
@@ -20,7 +20,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
   private given zioME: MonadError[Task] = new RIOMonadError[Any]
 
   private val pjf =
-    Program(1, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", ProgramType.LifetimeAccess)
+    Program(1, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", PaymentType.LifetimeAccess)
 
   private val serviceStub = new ProgramService {
     override def create(request: CreateProgramRequest): Task[Program] =
@@ -63,7 +63,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           response <- basicRequest
             .post(uri"/programs")
             .body(
-              CreateProgramRequest("PJF Performance", "pjf.com", "Paul J. Fabritz", ProgramType.LifetimeAccess).toJson
+              CreateProgramRequest("PJF Performance", "pjf.com", "Paul J. Fabritz", PaymentType.LifetimeAccess).toJson
             )
             .send(backendStub)
         } yield response.body
@@ -72,7 +72,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           respBody.toOption
             .flatMap(_.fromJson[Program].toOption)
             .contains(
-              Program(1, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", ProgramType.LifetimeAccess)
+              Program(1, "pjf-performance", "PJF Performance", "pjf.com", "Paul J. Fabritz", PaymentType.LifetimeAccess)
             )
         }
       },
