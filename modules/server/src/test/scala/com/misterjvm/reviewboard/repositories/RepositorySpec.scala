@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.repositories
 
-import com.misterjvm.reviewboard.domain.data.{Program, ProgramType}
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 import org.postgresql.ds.PGSimpleDataSource
 import org.testcontainers.containers.PostgreSQLContainer
 import zio.*
@@ -9,20 +9,23 @@ import zio.test.*
 import javax.sql.DataSource
 
 trait RepositorySpec {
+
+  val initScript: String
+
   protected def genProgram: Gen[Any, Program] =
     for {
       slug        <- Gen.stringN(8)(Gen.alphaNumericChar)
       name        <- Gen.stringN(8)(Gen.alphaNumericChar)
       url         <- Gen.stringN(16)(Gen.alphaNumericChar)
       trainer     <- Gen.stringN(8)(Gen.alphaNumericChar)
-      programType <- Gen.fromIterable(ProgramType.values)
+      paymentType <- Gen.fromIterable(PaymentType.values)
     } yield Program(
       id = -1L,
       slug = slug,
       name = name,
       url = url,
       trainer = trainer,
-      programType = programType
+      paymentType = paymentType
     )
 
   protected def genProgramN(n: Int): ZIO[Any, Nothing, List[Program]] =
@@ -31,7 +34,7 @@ trait RepositorySpec {
   // spawn a Postgres instance on Docker for the test
   private def createContainer() = {
     val container: PostgreSQLContainer[Nothing] =
-      PostgreSQLContainer("postgres").withInitScript("sql/programs.sql")
+      PostgreSQLContainer("postgres").withInitScript(initScript)
     container.start
     container
   }
