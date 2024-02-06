@@ -18,3 +18,7 @@ class ReviewController private (service: ReviewService) extends BaseController w
   override val routes: List[ServerEndpoint[Any, Task]] =
     List(create, getById, getByProgramId)
 }
+
+object ReviewController {
+  val makeZIO = ZIO.service[ReviewService].map(service => new ReviewController(service))
+}

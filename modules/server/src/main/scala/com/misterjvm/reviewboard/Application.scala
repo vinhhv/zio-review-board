@@ -2,8 +2,8 @@ package com.misterjvm.reviewboard
 
 import com.misterjvm.reviewboard.http.HttpAPI
 import com.misterjvm.reviewboard.http.controllers.{HealthController, ProgramController}
-import com.misterjvm.reviewboard.repositories.{ProgramRepositoryLive, Repository}
-import com.misterjvm.reviewboard.services.ProgramServiceLive
+import com.misterjvm.reviewboard.repositories.{ProgramRepositoryLive, Repository, ReviewRepositoryLive}
+import com.misterjvm.reviewboard.services.{ProgramServiceLive, ReviewServiceLive}
 import sttp.tapir.*
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*
@@ -26,8 +26,10 @@ object Application extends ZIOAppDefault {
       Server.default,
       // services
       ProgramServiceLive.layer,
+      ReviewServiceLive.layer,
       // repos
       ProgramRepositoryLive.layer,
+      ReviewRepositoryLive.layer,
       // other requirements
       Repository.dataLayer
     )
