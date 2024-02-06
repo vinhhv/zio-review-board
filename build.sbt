@@ -3,7 +3,9 @@ ThisBuild / scalaVersion := "3.3.1"
 ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
-  "-feature"
+  "-feature",
+  "-Xmax-inlines",
+  "64"
 )
 
 ThisBuild / testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
