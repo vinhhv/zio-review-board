@@ -2,7 +2,7 @@ package com.misterjvm.reviewboard.domain.data
 
 import zio.json.{DeriveJsonCodec, JsonCodec, JsonDecoder, JsonEncoder}
 
-enum PaymentType(val id: Int, val description: String):
+enum PaymentType private (val id: Int, val description: String):
   case LifetimeAccess               extends PaymentType(0, "One-time payment for lifetime access")
   case Subscription                 extends PaymentType(1, "Subscription-based (monthly or yearly)")
   case SubscriptionOrLifetimeAccess extends PaymentType(2, "Subscription or one-time payment for lifetime access")
