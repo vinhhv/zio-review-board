@@ -7,42 +7,8 @@ import com.misterjvm.reviewboard.syntax.*
 
 import java.time.Instant
 
-object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec {
+object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec with DataFixtures {
   override val initScript: String = "sql/reviews.sql"
-
-  import MetricScore.*
-
-  val goodReview = Review(
-    id = 1L,
-    programId = 1L,
-    userId = 1L,
-    value = Amazing,
-    quality = Amazing,
-    content = Amazing,
-    userExperience = Amazing,
-    accessibility = Amazing,
-    support = Amazing,
-    wouldRecommend = Amazing,
-    review = "Wow!",
-    created = Instant.now(),
-    updated = Instant.now()
-  )
-
-  val badReview = Review(
-    id = 2L,
-    programId = 1L,
-    userId = 1L,
-    value = Poor,
-    quality = Poor,
-    content = Poor,
-    userExperience = Poor,
-    accessibility = Poor,
-    support = Poor,
-    wouldRecommend = Poor,
-    review = "Sucks!",
-    created = Instant.now(),
-    updated = Instant.now()
-  )
 
   override def spec: Spec[TestEnvironment & Scope, Any] =
     suite("ReviewRepositorySpec")(

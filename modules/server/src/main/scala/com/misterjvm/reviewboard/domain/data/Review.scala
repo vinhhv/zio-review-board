@@ -8,7 +8,6 @@ final case class Review(
     id: Long,
     programId: Long,
     userId: Long,
-    // scores
     value: MetricScore,
     quality: MetricScore,
     content: MetricScore,

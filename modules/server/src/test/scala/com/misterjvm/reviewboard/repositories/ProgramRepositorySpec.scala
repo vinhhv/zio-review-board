@@ -1,13 +1,13 @@
 package com.misterjvm.reviewboard.repositories
 
-import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, PaymentType, Program}
 import com.misterjvm.reviewboard.syntax.*
 import zio.*
 import zio.test.*
 
 import java.sql.SQLException
 
-object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec {
+object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec with DataFixtures {
   private val pjf = Program(1L, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess)
 
   override val initScript: String = "sql/programs.sql"
