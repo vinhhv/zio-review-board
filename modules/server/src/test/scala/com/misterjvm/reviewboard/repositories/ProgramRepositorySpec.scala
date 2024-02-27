@@ -10,7 +10,7 @@ import java.sql.SQLException
 object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec with DataFixtures {
   private val pjf = Program(1L, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess)
 
-  override val initScript: String = "sql/programs.sql"
+  override val initScript: String = "sql/initdb.sql"
 
   override def spec: Spec[TestEnvironment & Scope, Any] =
     suite("ProgramRepositorySpec")(

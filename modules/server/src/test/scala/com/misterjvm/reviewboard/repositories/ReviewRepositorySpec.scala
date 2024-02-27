@@ -8,7 +8,7 @@ import com.misterjvm.reviewboard.syntax.*
 import java.time.Instant
 
 object ReviewRepositorySpec extends ZIOSpecDefault with RepositorySpec with DataFixtures {
-  override val initScript: String = "sql/reviews.sql"
+  override val initScript: String = "sql/initdb.sql"
 
   override def spec: Spec[TestEnvironment & Scope, Any] =
     suite("ReviewRepositorySpec")(
