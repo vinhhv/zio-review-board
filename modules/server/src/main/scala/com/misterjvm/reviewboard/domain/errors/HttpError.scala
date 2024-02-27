@@ -9,7 +9,7 @@ final case class HttpError(
 ) extends RuntimeException(message, cause)
 
 object HttpError {
-  def decode(tuple: (StatusCode, String)) =
+  def decode(tuple: (StatusCode, String)): HttpError =
     HttpError(tuple._1, tuple._2, new RuntimeException(tuple._2))
 
   def encode(error: Throwable): (StatusCode, String) =

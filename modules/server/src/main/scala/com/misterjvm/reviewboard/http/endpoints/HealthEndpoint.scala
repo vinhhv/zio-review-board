@@ -2,17 +2,18 @@ package com.misterjvm.reviewboard.http.endpoints
 
 import sttp.tapir.*
 
-trait HealthEndpoint {
-  val healthEndpoint = endpoint
-    .tag("health")
-    .name("health")
-    .description("health check")
-    .get
-    .in("health")
-    .out(plainBody[String])
+trait HealthEndpoint extends BaseEndpoint {
+  val healthEndpoint =
+    baseEndpoint
+      .tag("health")
+      .name("health")
+      .description("health check")
+      .get
+      .in("health")
+      .out(plainBody[String])
 
   val errorEndpoint =
-    endpoint
+    baseEndpoint
       .tag("health")
       .name("error health")
       .description("health check - should fail")

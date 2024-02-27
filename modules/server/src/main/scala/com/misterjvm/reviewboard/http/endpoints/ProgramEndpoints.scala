@@ -7,9 +7,9 @@ import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
 import zio.*
 
-trait ProgramEndpoints {
+trait ProgramEndpoints extends BaseEndpoint {
   val createEndpoint =
-    endpoint
+    baseEndpoint
       .tag("programs")
       .name("create")
       .description("create a listing for a program")
@@ -19,7 +19,7 @@ trait ProgramEndpoints {
       .out(jsonBody[Program])
 
   val getAllEndpoint =
-    endpoint
+    baseEndpoint
       .tag("programs")
       .name("getAll")
       .description("get all program listings")
@@ -28,7 +28,7 @@ trait ProgramEndpoints {
       .out(jsonBody[List[Program]])
 
   val getByIdEndpoint =
-    endpoint
+    baseEndpoint
       .tag("programs")
       .name("getById")
       .description("get program by its id (or maybe by slug?)") // TODO
