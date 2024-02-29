@@ -8,6 +8,8 @@ import com.misterjvm.reviewboard.domain.data.*
 import zio.*
 
 import java.time.Instant
+import zio.config.typesafe.TypesafeConfig
+import com.typesafe.config.ConfigFactory
 
 trait JWTService {
   def createToken(user: User): Task[UserToken]
@@ -62,6 +64,9 @@ object JWTServiceLive {
       clock     <- Clock.javaClock
     } yield new JWTServiceLive(jwtConfig, clock)
   }
+
+  val configuredLayer =
+    Configs.makeLayer[JWTConfig]("misterjvm.jwt") >>> layer
 }
 
 object JWTServiceDemo extends ZIOAppDefault {
@@ -76,6 +81,6 @@ object JWTServiceDemo extends ZIOAppDefault {
   override def run: ZIO[Any & (ZIOAppArgs & Scope), Any, Any] =
     program.provide(
       JWTServiceLive.layer,
-      ZLayer.succeed(JWTConfig("secret", 30 * 24 * 3600))
+      Configs.makeLayer[JWTConfig]("misterjvm.jwt")
     )
 }
