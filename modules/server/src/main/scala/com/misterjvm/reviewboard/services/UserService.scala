@@ -12,6 +12,8 @@ import com.misterjvm.reviewboard.repositories.UserRepositoryLive
 trait UserService {
   def registerUser(email: String, password: String): Task[User]
   def verifyPassword(email: String, password: String): Task[Boolean]
+  def updatePassword(email: String, oldPassword: String, newPassword: String): Task[User]
+  def deleteUser(email: String, password: String): Task[User]
   // JWT
   def generateToken(email: String, password: String): Task[Option[UserToken]]
 }
@@ -31,7 +33,7 @@ class UserServiceLive private (jwtService: JWTService, userRepo: UserRepository)
     for {
       existingUser <- userRepo
         .getByEmail(email)
-        .someOrFail(new RuntimeException(s"Cannot verify user $email: nonexistent"))
+        .someOrFail(UserServiceLive.nonexistentUserError(email))
       result <- ZIO.attempt(UserServiceLive.Hasher.validateHash(password, existingUser.hashedPassword))
     } yield result
 
@@ -39,13 +41,43 @@ class UserServiceLive private (jwtService: JWTService, userRepo: UserRepository)
     for {
       existingUser <- userRepo
         .getByEmail(email)
-        .someOrFail(new RuntimeException(s"Cannot verify user $email: nonexistent"))
+        .someOrFail(UserServiceLive.nonexistentUserError(email))
       verified <- ZIO.attempt(
         UserServiceLive.Hasher.validateHash(password, existingUser.hashedPassword)
       )
       maybeToken <- jwtService.createToken(existingUser).when(verified)
     } yield maybeToken
 
+  override def updatePassword(email: String, oldPassword: String, newPassword: String): Task[User] =
+    for {
+      existingUser <- userRepo
+        .getByEmail(email)
+        .someOrFail(UserServiceLive.nonexistentUserError(email))
+      verified <- ZIO.attempt(
+        UserServiceLive.Hasher.validateHash(oldPassword, existingUser.hashedPassword)
+      )
+      updatedUser <- userRepo
+        .update(
+          existingUser.id,
+          user => user.copy(hashedPassword = UserServiceLive.Hasher.generateHash(newPassword))
+        )
+        .when(verified)
+        .someOrFail(new RuntimeException(s"Could not update password for $email"))
+    } yield updatedUser
+
+  override def deleteUser(email: String, password: String): Task[User] =
+    for {
+      existingUser <- userRepo
+        .getByEmail(email)
+        .someOrFail(UserServiceLive.nonexistentUserError(email))
+      verified <- ZIO.attempt(
+        UserServiceLive.Hasher.validateHash(password, existingUser.hashedPassword)
+      )
+      updatedUser <- userRepo
+        .delete(existingUser.id)
+        .when(verified)
+        .someOrFail(new RuntimeException(s"Could not delete user for $email"))
+    } yield updatedUser
 }
 
 object UserServiceLive {
@@ -55,6 +87,10 @@ object UserServiceLive {
       userRepo   <- ZIO.service[UserRepository]
     } yield new UserServiceLive(jwtService, userRepo)
   }
+
+  def nonexistentUserError(email: String): RuntimeException = new RuntimeException(
+    s"Cannot verify user $email: nonexistent"
+  )
 
   object Hasher {
     private val PBKDF2_ALGORITHM: String = "PBKDF2WithHmacSHA512"
