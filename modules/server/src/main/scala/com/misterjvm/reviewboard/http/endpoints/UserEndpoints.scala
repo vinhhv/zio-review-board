@@ -51,4 +51,25 @@ trait UserEndpoints extends BaseEndpoint with EndpointConstants {
       .post
       .in(jsonBody[LoginRequest])
       .out(jsonBody[UserToken])
+
+  // POST /users/forgot { email } - 200 OK
+  val forgotPasswordEndpoint =
+    baseEndpoint
+      .tag("Users")
+      .name("forgot password")
+      .description("Trigger email for password recovery")
+      .in(USERS_ENDPOINT / "forgot")
+      .post
+      .in(jsonBody[ForgotPasswordRequest])
+
+  // recover password
+  // POST /users/recover { email, token, newPassword }
+  val recoverPasswordEndpoint =
+    baseEndpoint
+      .tag("Users")
+      .name("recover password")
+      .description("Set new password based on OTP")
+      .in(USERS_ENDPOINT / "recover")
+      .post
+      .in(jsonBody[RecoverPasswordRequest])
 }

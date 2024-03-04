@@ -5,11 +5,18 @@ import com.misterjvm.reviewboard.http.HttpAPI
 import com.misterjvm.reviewboard.http.controllers.{HealthController, ProgramController}
 import com.misterjvm.reviewboard.repositories.{
   ProgramRepositoryLive,
+  RecoveryTokensRepositoryLive,
   Repository,
   ReviewRepositoryLive,
   UserRepositoryLive
 }
-import com.misterjvm.reviewboard.services.{JWTServiceLive, ProgramServiceLive, ReviewServiceLive, UserServiceLive}
+import com.misterjvm.reviewboard.services.{
+  EmailServiceLive,
+  JWTServiceLive,
+  ProgramServiceLive,
+  ReviewServiceLive,
+  UserServiceLive
+}
 import sttp.tapir.*
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*
@@ -37,10 +44,12 @@ object Application extends ZIOAppDefault {
       ReviewServiceLive.layer,
       UserServiceLive.layer,
       JWTServiceLive.layer,
+      EmailServiceLive.layer,
       // repos
       ProgramRepositoryLive.layer,
       ReviewRepositoryLive.layer,
       UserRepositoryLive.layer,
+      RecoveryTokensRepositoryLive.layer,
       // other requirements
       Repository.dataLayer
     )

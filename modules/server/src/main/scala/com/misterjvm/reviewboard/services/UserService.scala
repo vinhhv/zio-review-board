@@ -1,13 +1,12 @@
 package com.misterjvm.reviewboard.services
 
 import com.misterjvm.reviewboard.domain.data.{User, UserToken}
-import com.misterjvm.reviewboard.repositories.UserRepository
+import com.misterjvm.reviewboard.repositories.{RecoveryTokensRepository, UserRepository, UserRepositoryLive}
 import zio.*
 
 import java.security.SecureRandom
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
-import com.misterjvm.reviewboard.repositories.UserRepositoryLive
 
 trait UserService {
   def registerUser(email: String, password: String): Task[User]
@@ -16,9 +15,17 @@ trait UserService {
   def deleteUser(email: String, password: String): Task[User]
   // JWT
   def generateToken(email: String, password: String): Task[Option[UserToken]]
+  // Password recovery flow
+  def sendPasswordRecoveryToken(email: String): Task[Unit]
+  def recoverPasswordFromToken(email: String, token: String, newPassword: String): Task[Boolean]
 }
 
-class UserServiceLive private (jwtService: JWTService, userRepo: UserRepository) extends UserService {
+class UserServiceLive private (
+    jwtService: JWTService,
+    emailService: EmailService,
+    userRepo: UserRepository,
+    tokenRepo: RecoveryTokensRepository
+) extends UserService {
 
   override def registerUser(email: String, password: String): Task[User] =
     userRepo.create(
@@ -40,17 +47,6 @@ class UserServiceLive private (jwtService: JWTService, userRepo: UserRepository)
         case None => ZIO.succeed(false)
       }
     } yield result
-
-  override def generateToken(email: String, password: String): Task[Option[UserToken]] =
-    for {
-      existingUser <- userRepo
-        .getByEmail(email)
-        .someOrFail(UserServiceLive.nonexistentUserError(email))
-      verified <- ZIO.attempt(
-        UserServiceLive.Hasher.validateHash(password, existingUser.hashedPassword)
-      )
-      maybeToken <- jwtService.createToken(existingUser).when(verified)
-    } yield maybeToken
 
   override def updatePassword(email: String, oldPassword: String, newPassword: String): Task[User] =
     for {
@@ -82,14 +78,47 @@ class UserServiceLive private (jwtService: JWTService, userRepo: UserRepository)
         .when(verified)
         .someOrFail(new RuntimeException(s"Could not delete user for $email"))
     } yield updatedUser
+
+  override def generateToken(email: String, password: String): Task[Option[UserToken]] =
+    for {
+      existingUser <- userRepo
+        .getByEmail(email)
+        .someOrFail(UserServiceLive.nonexistentUserError(email))
+      verified <- ZIO.attempt(
+        UserServiceLive.Hasher.validateHash(password, existingUser.hashedPassword)
+      )
+      maybeToken <- jwtService.createToken(existingUser).when(verified)
+    } yield maybeToken
+
+  override def sendPasswordRecoveryToken(email: String): Task[Unit] =
+    tokenRepo.getToken(email).flatMap {
+      case Some(token) => emailService.sendPasswordRecoveryEmail(email, token)
+      case None        => ZIO.unit
+    }
+
+  override def recoverPasswordFromToken(email: String, token: String, newPassword: String): Task[Boolean] =
+    for {
+      existingUser <-
+        userRepo
+          .getByEmail(email)
+          .someOrFail(new RuntimeException(s"User $email does not exist"))
+      isTokenValid <- tokenRepo.checkToken(email, token)
+      wasPasswordRecovered <-
+        userRepo
+          .update(existingUser.id, user => user.copy(hashedPassword = UserServiceLive.Hasher.generateHash(newPassword)))
+          .when(isTokenValid)
+          .map(_.nonEmpty)
+    } yield wasPasswordRecovered
 }
 
 object UserServiceLive {
   val layer = ZLayer {
     for {
-      jwtService <- ZIO.service[JWTService]
-      userRepo   <- ZIO.service[UserRepository]
-    } yield new UserServiceLive(jwtService, userRepo)
+      jwtService   <- ZIO.service[JWTService]
+      emailService <- ZIO.service[EmailService]
+      userRepo     <- ZIO.service[UserRepository]
+      tokenRepo    <- ZIO.service[RecoveryTokensRepository]
+    } yield new UserServiceLive(jwtService, emailService, userRepo, tokenRepo)
   }
 
   def nonexistentUserError(email: String): RuntimeException = new RuntimeException(
