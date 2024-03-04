@@ -37,19 +37,17 @@ object Application extends ZIOAppDefault {
   override def run =
     serverProgram.provide(
       Server.default,
-      // configs
-      Configs.makeLayer[JWTConfig]("misterjvm.jwt"),
       // services
       ProgramServiceLive.layer,
       ReviewServiceLive.layer,
       UserServiceLive.layer,
-      JWTServiceLive.layer,
+      JWTServiceLive.configuredLayer,
       EmailServiceLive.layer,
       // repos
       ProgramRepositoryLive.layer,
       ReviewRepositoryLive.layer,
       UserRepositoryLive.layer,
-      RecoveryTokensRepositoryLive.layer,
+      RecoveryTokensRepositoryLive.configuredLayer,
       // other requirements
       Repository.dataLayer
     )
