@@ -58,3 +58,10 @@ CREATE TRIGGER update_updated_column_before_update
 BEFORE UPDATE ON reviews
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
+
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  hashed_password TEXT NOT NULL
+);
