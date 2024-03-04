@@ -7,7 +7,7 @@ import sttp.tapir.*
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
 
-trait UserEndpoints extends BaseEndpoint {
+trait UserEndpoints extends BaseEndpoint with EndpointConstants {
 
   // POST /users { email, password } -> { email }
   val createUserEndpoint =
@@ -15,7 +15,7 @@ trait UserEndpoints extends BaseEndpoint {
       .tag("Users")
       .name("register")
       .description("Register a user with username and password")
-      .in("user")
+      .in(USERS_ENDPOINT)
       .post
       .in(jsonBody[RegisterUserAccount])
       .out(jsonBody[UserResponse])
@@ -26,7 +26,7 @@ trait UserEndpoints extends BaseEndpoint {
       .tag("Users")
       .name("update password")
       .description("Update user password")
-      .in("users" / "password")
+      .in(USERS_ENDPOINT / "password")
       .in(jsonBody[UpdatePasswordRequest])
       .out(jsonBody[UserResponse])
 
@@ -36,7 +36,7 @@ trait UserEndpoints extends BaseEndpoint {
       .tag("Users")
       .name("delete")
       .description("Delete user account")
-      .in("users")
+      .in(USERS_ENDPOINT)
       .delete
       .in(jsonBody[DeleteAccountRequest])
       .out(jsonBody[UserResponse])
@@ -47,7 +47,7 @@ trait UserEndpoints extends BaseEndpoint {
       .tag("Users")
       .name("login")
       .description("Log in and generate a JWT token")
-      .in("users" / "login")
+      .in(USERS_ENDPOINT / "login")
       .post
       .in(jsonBody[LoginRequest])
       .out(jsonBody[UserToken])
