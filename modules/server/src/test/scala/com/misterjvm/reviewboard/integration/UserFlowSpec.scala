@@ -20,10 +20,6 @@ import zio.json.*
 import zio.test.*
 
 object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointConstants {
-  // http controller
-  // service
-  // repository
-  // test container
 
   private val EMAIL    = "vinh@misterjvm.com"
   private val PASSWORD = "misterjvm"
