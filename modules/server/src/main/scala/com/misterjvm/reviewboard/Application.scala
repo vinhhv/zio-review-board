@@ -31,7 +31,6 @@ object Application extends ZIOAppDefault {
         ZioHttpServerOptions.default
       ).toHttp(endpoints)
     )
-    _ <- Console.printLine("Mister JVM!")
   } yield ()
 
   override def run =
@@ -42,7 +41,7 @@ object Application extends ZIOAppDefault {
       ReviewServiceLive.layer,
       UserServiceLive.layer,
       JWTServiceLive.configuredLayer,
-      EmailServiceLive.layer,
+      EmailServiceLive.configuredLayer,
       // repos
       ProgramRepositoryLive.layer,
       ReviewRepositoryLive.layer,
