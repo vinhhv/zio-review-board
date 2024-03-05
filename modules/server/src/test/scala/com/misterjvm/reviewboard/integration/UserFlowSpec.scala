@@ -1,12 +1,18 @@
 package com.misterjvm.reviewboard.integration
 
-import com.misterjvm.reviewboard.config.JWTConfig
+import com.misterjvm.reviewboard.config.{JWTConfig, RecoveryTokensConfig}
 import com.misterjvm.reviewboard.domain.data.*
 import com.misterjvm.reviewboard.http.controllers.*
 import com.misterjvm.reviewboard.http.endpoints.EndpointConstants
 import com.misterjvm.reviewboard.http.requests.*
 import com.misterjvm.reviewboard.http.responses.*
-import com.misterjvm.reviewboard.repositories.{Repository, RepositorySpec, UserRepository, UserRepositoryLive}
+import com.misterjvm.reviewboard.repositories.{
+  RecoveryTokensRepositoryLive,
+  Repository,
+  RepositorySpec,
+  UserRepository,
+  UserRepositoryLive
+}
 import com.misterjvm.reviewboard.services.*
 import sttp.client3.testing.SttpBackendStub
 import sttp.client3.{SttpBackend, _}
@@ -21,9 +27,10 @@ import zio.test.*
 
 object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointConstants {
 
-  private val EMAIL    = "vinh@misterjvm.com"
-  private val PASSWORD = "misterjvm"
-  private val USERS    = s"/${USERS_ENDPOINT}"
+  private val EMAIL        = "vinh@misterjvm.com"
+  private val PASSWORD     = "misterjvm"
+  private val NEW_PASSWORD = "scalarulez"
+  private val USERS        = s"/${USERS_ENDPOINT}"
 
   override val initScript: String = "sql/integration.sql"
 
@@ -61,6 +68,13 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
     def postAuth[B: JsonCodec](path: String, payload: A, token: String): Task[Option[B]] =
       sendRequest(Method.PUT, path, payload, Some(token))
 
+    def postNoResponse(path: String, payload: A): Task[Unit] =
+      basicRequest
+        .method(Method.POST, uri"$path")
+        .body(payload.toJson)
+        .send(backend)
+        .unit
+
     def put[B: JsonCodec](path: String, payload: A): Task[Option[B]] =
       sendRequest(Method.PUT, path, payload, None)
 
@@ -73,6 +87,17 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
     def deleteAuth[B: JsonCodec](path: String, payload: A, token: String): Task[Option[B]] =
       sendRequest(Method.DELETE, path, payload, Some(token))
   }
+
+  class EmailServiceProbe extends EmailService {
+    val db = collection.mutable.Map[String, String]()
+    override def sendEmail(to: String, subject: String, content: String): Task[Unit] =
+      ZIO.unit
+    override def sendPasswordRecoveryEmail(to: String, token: String): Task[Unit] =
+      ZIO.succeed(db += (to -> token))
+    def probeToken(email: String): Task[Option[String]] = ZIO.succeed(db.get(email))
+  }
+
+  val emailServiceLayer: ZLayer[Any, Nothing, EmailServiceProbe] = ZLayer.succeed(new EmailServiceProbe)
 
   override def spec: Spec[TestEnvironment & Scope, Any] =
     suite("UserFlowSpec")(
@@ -92,7 +117,6 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
         )
       },
       test("change password") {
-        val NEW_PASSWORD = "scalarulez"
         for {
           backendStub   <- backendStubZIO
           maybeResponse <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
@@ -130,14 +154,32 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
         } yield assertTrue(
           maybeOldUser.filter(_.email == EMAIL).nonEmpty && maybeUser.isEmpty
         )
-      }
+      },
+      test("recover password flow")(
+        for {
+          backendStub       <- backendStubZIO
+          _                 <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
+          _                 <- backendStub.postNoResponse(s"$USERS/forgot", ForgotPasswordRequest(EMAIL))
+          emailServiceProbe <- ZIO.service[EmailServiceProbe]
+          token <-
+            emailServiceProbe
+              .probeToken(EMAIL)
+              .someOrFail(new RuntimeException("Token was NOT emailed!"))
+          _ <- backendStub.postNoResponse(s"$USERS/recover", RecoverPasswordRequest(EMAIL, token, "scalarulez"))
+          maybeOldToken <- backendStub.post[UserToken](s"$USERS/login", LoginRequest(EMAIL, PASSWORD))
+          maybeNewToken <- backendStub.post[UserToken](s"$USERS/login", LoginRequest(EMAIL, NEW_PASSWORD))
+        } yield assertTrue(maybeOldToken.isEmpty && maybeNewToken.nonEmpty)
+      )
     ).provide(
       UserServiceLive.layer,
       JWTServiceLive.layer,
       UserRepositoryLive.layer,
+      RecoveryTokensRepositoryLive.layer,
+      emailServiceLayer,
       Repository.quillLayer,
       dataSourceLayer,
       ZLayer.succeed(JWTConfig("secret", 3600)),
+      ZLayer.succeed(RecoveryTokensConfig(24 * 3600)),
       Scope.default
     )
 }
