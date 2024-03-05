@@ -9,7 +9,7 @@ import zio.*
 
 trait ProgramEndpoints extends BaseEndpoint {
   val createEndpoint =
-    baseEndpoint
+    secureBaseEndpoint
       .tag("programs")
       .name("create")
       .description("create a listing for a program")

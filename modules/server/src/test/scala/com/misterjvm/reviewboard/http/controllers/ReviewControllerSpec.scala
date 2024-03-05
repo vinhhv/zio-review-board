@@ -1,8 +1,8 @@
 package com.misterjvm.reviewboard.http.controllers
 
-import com.misterjvm.reviewboard.domain.data.{DataFixtures, MetricScore, Review}
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, MetricScore, Review, User, UserID, UserToken}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
-import com.misterjvm.reviewboard.services.ReviewService
+import com.misterjvm.reviewboard.services.{JWTService, ReviewService}
 import com.misterjvm.reviewboard.syntax.*
 import sttp.client3.*
 import sttp.client3.testing.SttpBackendStub
@@ -42,6 +42,18 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
       }
   }
 
+  private val jwtServiceStub = new JWTService {
+    val TOKEN = "TOKEN"
+    override def createToken(user: User): Task[UserToken] =
+      ZIO.succeed(UserToken(user.email, TOKEN, 999999999L))
+
+    override def verifyToken(token: String): Task[UserID] =
+      if (token == TOKEN)
+        ZIO.succeed(UserID(1, "vinh@misterjvm.com"))
+      else
+        ZIO.fail(new RuntimeException(s"Invalid user token $token"))
+  }
+
   private def backendStubZIO(endpointF: ReviewController => ServerEndpoint[Any, Task]) =
     for {
       controller <- ReviewController.makeZIO
@@ -74,6 +86,7 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
                 review = "Wow!"
               ).toJson
             )
+            .header("Authorization", "Bearer TOKEN")
             .send(backendStub)
         } yield response.body
 
@@ -111,5 +124,8 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
             responseNotFound.body.toOption.flatMap(_.fromJson[List[Review]].toOption).contains(List())
         )
       }
-    ).provide(ZLayer.succeed(serviceStub))
+    ).provide(
+      ZLayer.succeed(serviceStub),
+      ZLayer.succeed(jwtServiceStub)
+    )
 }
