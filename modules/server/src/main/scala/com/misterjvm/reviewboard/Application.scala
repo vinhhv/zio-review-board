@@ -18,6 +18,7 @@ import com.misterjvm.reviewboard.services.{
   UserServiceLive
 }
 import sttp.tapir.*
+import sttp.tapir.server.interceptor.cors.CORSInterceptor
 import sttp.tapir.server.ziohttp.{ZioHttpInterpreter, ZioHttpServerOptions}
 import zio.*
 import zio.http.Server
@@ -28,7 +29,9 @@ object Application extends ZIOAppDefault {
     endpoints <- HttpAPI.endpointsZIO
     _ <- Server.serve(
       ZioHttpInterpreter(
-        ZioHttpServerOptions.default
+        ZioHttpServerOptions.default.appendInterceptor(
+          CORSInterceptor.default
+        )
       ).toHttp(endpoints)
     )
   } yield ()
