@@ -1,12 +1,12 @@
 package com.misterjvm.reviewboard.http.controllers
 
-import com.misterjvm.reviewboard.domain.data.*
 import com.misterjvm.reviewboard.http.endpoints.ProgramEndpoints
 import com.misterjvm.reviewboard.services.{JWTService, ProgramService}
 import sttp.tapir.server.ServerEndpoint
 import zio.*
 
 import scala.collection.mutable
+import com.misterjvm.reviewboard.domain.data.UserID
 
 class ProgramController private (service: ProgramService, jwtService: JWTService)
     extends BaseController

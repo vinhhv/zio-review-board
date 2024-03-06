@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard.http.controllers
 
-import com.misterjvm.reviewboard.domain.data.{DataFixtures, MetricScore, Review, User, UserID, UserToken}
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, UserToken}
+import com.misterjvm.reviewboard.domain.data.{MetricScore, Review, User, UserID, UserToken}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import com.misterjvm.reviewboard.services.{JWTService, ReviewService}
 import com.misterjvm.reviewboard.syntax.*

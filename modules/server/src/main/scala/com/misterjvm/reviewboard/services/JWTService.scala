@@ -4,12 +4,12 @@ import com.auth0.jwt.JWTVerifier.BaseVerification
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.{JWT, JWTVerifier}
 import com.misterjvm.reviewboard.config.*
-import com.misterjvm.reviewboard.domain.data.*
 import zio.*
 
 import java.time.Instant
 import zio.config.typesafe.TypesafeConfig
 import com.typesafe.config.ConfigFactory
+import com.misterjvm.reviewboard.domain.data.{User, UserToken, UserID}
 
 trait JWTService {
   def createToken(user: User): Task[UserToken]

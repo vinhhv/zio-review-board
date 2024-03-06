@@ -1,13 +1,13 @@
 package com.misterjvm.reviewboard.http.controllers
 
 import com.misterjvm.reviewboard.domain.data.UserID
-import com.misterjvm.reviewboard.domain.errors.*
 import com.misterjvm.reviewboard.http.endpoints.UserEndpoints
 import com.misterjvm.reviewboard.http.responses.UserResponse
 import com.misterjvm.reviewboard.services.{JWTService, UserService}
 import sttp.tapir.*
 import sttp.tapir.server.*
 import zio.*
+import com.misterjvm.reviewboard.domain.errors.UnauthorizedException
 
 class UserController private (userService: UserService, jwtService: JWTService)
     extends BaseController

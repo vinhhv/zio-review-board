@@ -1,7 +1,7 @@
 package com.misterjvm.reviewboard.http.requests
 
-import com.misterjvm.reviewboard.domain.data.*
 import zio.json.{DeriveJsonCodec, JsonCodec}
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 
 final case class CreateProgramRequest(
     name: String,

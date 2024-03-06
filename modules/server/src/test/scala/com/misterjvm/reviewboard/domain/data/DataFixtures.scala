@@ -5,6 +5,7 @@ import zio.*
 import zio.test.*
 
 import java.time.Instant
+import com.misterjvm.reviewboard.domain.data.{MetricScore, PaymentType, Program, Review}
 
 trait DataFixtures {
   protected def genProgram: Gen[Any, Program] =

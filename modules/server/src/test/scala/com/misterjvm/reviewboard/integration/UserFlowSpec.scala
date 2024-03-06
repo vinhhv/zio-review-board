@@ -1,11 +1,8 @@
 package com.misterjvm.reviewboard.integration
 
 import com.misterjvm.reviewboard.config.{JWTConfig, RecoveryTokensConfig}
-import com.misterjvm.reviewboard.domain.data.*
 import com.misterjvm.reviewboard.http.controllers.*
 import com.misterjvm.reviewboard.http.endpoints.EndpointConstants
-import com.misterjvm.reviewboard.http.requests.*
-import com.misterjvm.reviewboard.http.responses.*
 import com.misterjvm.reviewboard.repositories.{
   RecoveryTokensRepositoryLive,
   Repository,
@@ -24,6 +21,16 @@ import sttp.tapir.ztapir.RIOMonadError
 import zio.*
 import zio.json.*
 import zio.test.*
+import com.misterjvm.reviewboard.domain.data.UserToken
+import com.misterjvm.reviewboard.http.requests.{
+  DeleteAccountRequest,
+  ForgotPasswordRequest,
+  LoginRequest,
+  RecoverPasswordRequest,
+  RegisterUserAccount,
+  UpdatePasswordRequest
+}
+import com.misterjvm.reviewboard.http.responses.UserResponse
 
 object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointConstants {
 

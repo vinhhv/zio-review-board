@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard.repositories
 
-import com.misterjvm.reviewboard.domain.data.{DataFixtures, PaymentType, Program}
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, Program}
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 import com.misterjvm.reviewboard.syntax.*
 import zio.*
 import zio.test.*

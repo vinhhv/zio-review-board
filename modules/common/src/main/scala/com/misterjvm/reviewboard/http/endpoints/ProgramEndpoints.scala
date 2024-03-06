@@ -1,11 +1,11 @@
 package com.misterjvm.reviewboard.http.endpoints
 
-import com.misterjvm.reviewboard.domain.data.*
-import com.misterjvm.reviewboard.http.requests.*
 import sttp.tapir.*
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
 import zio.*
+import com.misterjvm.reviewboard.domain.data.Program
+import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 
 trait ProgramEndpoints extends BaseEndpoint {
   val createEndpoint =

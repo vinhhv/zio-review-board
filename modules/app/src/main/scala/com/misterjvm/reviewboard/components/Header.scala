@@ -1,8 +1,10 @@
 package com.misterjvm.reviewboard.components
 
+import com.misterjvm.reviewboard.common.*
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.codecs.*
 import org.scalajs.dom
+
 import scala.scalajs.js
 import scala.scalajs.js.annotation.*
 
@@ -43,17 +45,13 @@ object Header {
       )
     )
 
-  @js.native
-  @JSImport("/static/img/basketball.jpg", JSImport.Default)
-  private val logoImage: String = js.native
-
   private def renderLogo() =
     a(
       href := "/",
       cls  := "navbar-brand",
       img(
         cls := "home-logo",
-        src := logoImage,
+        src := Constants.logoImage,
         alt := "Nothing but Net"
       )
     )
@@ -70,14 +68,5 @@ object Header {
     li(
       cls := "nav-item",
       Anchors.renderNavLink(text, location, "nav-link jvm-item")
-    )
-}
-
-object Anchors {
-  def renderNavLink(text: String, location: String, cssClass: String = "") =
-    a(
-      href := location,
-      cls  := cssClass,
-      text
     )
 }
