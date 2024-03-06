@@ -1,18 +1,26 @@
 package com.misterjvm.reviewboard
 
+import com.misterjvm.reviewboard.components.*
 import com.raquo.airstream.ownership.OneTimeOwner
 import com.raquo.airstream.timing.PeriodicStream
 import com.raquo.laminar.api.L.{*, given}
+import frontroute.LinkHandler
 import org.scalajs.dom
 
 import scala.util.Try
 
 object App {
+
+  val app = div(
+    Header(),
+    Router()
+  ).amend(LinkHandler.bind) // for internal links
+
   def main(args: Array[String]): Unit = {
     val containerNode = dom.document.querySelector("#app")
     render(
       containerNode,
-      Tutorial.clicksVar
+      app
     )
   }
 }
