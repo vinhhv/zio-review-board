@@ -14,6 +14,7 @@ object ProgramsPage {
     "Dummy Program",
     "http://dummyprograms.com",
     1L,
+    "Dummy Dum",
     PaymentType.LifetimeAccess,
     None,
     List("Ball Handling", "Weightlifting")
@@ -53,14 +54,26 @@ object ProgramsPage {
       alt := program.name
     )
 
-  private def renderDetail(icon: String, value: String) =
+  private def renderDetail(icon: String, value: String, maybeLink: Option[String] = None) =
     div(
       cls := "program-detail",
-      i(cls := s"fa fa-$icon program-detail-icon"),
-      p(
-        cls := "program-detail-value",
-        value
-      )
+      i(cls := s"fa fa-$icon program-detail-icon"), {
+        maybeLink match
+          case None =>
+            p(
+              cls := "program-detail-value",
+              value
+            )
+          case Some(link) =>
+            a(
+              href   := link,
+              target := "blank",
+              p(
+                cls := "program-detail-value",
+                value
+              )
+            )
+      }
     )
 
   private def renderOverview(program: Program) =
@@ -68,8 +81,9 @@ object ProgramsPage {
       cls := "program-summary",
       renderDetail(
         "person",
-        program.trainerId.toString
-      ), // TODO: Add trainer name to Program so we don't have to make another DB call
+        program.trainerName,
+        Some(s"/trainer/${program.trainerId}")
+      ),
       renderDetail("tags", program.tags.mkString(", "))
     )
 

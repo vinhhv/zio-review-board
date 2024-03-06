@@ -9,6 +9,7 @@ final case class Program(
     name: String, // "PJF Performance Ball Handling Code" -> hoops.com/programs/pjf-performance-ball-handling-code
     url: String,
     trainerId: Long,
+    trainerName: String, // Paul J. Fabritz
     paymentType: PaymentType,
     image: Option[String] = None,
     tags: List[String] = List()

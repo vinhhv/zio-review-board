@@ -7,12 +7,13 @@ final case class CreateProgramRequest(
     name: String,
     url: String,
     trainerId: Long,
+    trainerName: String,
     paymentType: PaymentType,
     image: Option[String] = None,
     tags: Option[List[String]] = None
 ) {
   def toProgram(id: Long) =
-    Program(id, Program.makeSlug(name), name, url, trainerId, paymentType, image, tags.getOrElse(List()))
+    Program(id, Program.makeSlug(name), name, url, trainerId, trainerName, paymentType, image, tags.getOrElse(List()))
 }
 
 object CreateProgramRequest {

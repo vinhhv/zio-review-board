@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS programs (
   name TEXT UNIQUE NOT NULL,
   url TEXT UNIQUE NOT NULL,
   trainer_id BIGSERIAL NOT NULL REFERENCES trainers(id),
+  trainer_name TEXT NOT NULL,
   payment_type payment_type NOT NULL,
   image TEXT,
   tags TEXT[]
