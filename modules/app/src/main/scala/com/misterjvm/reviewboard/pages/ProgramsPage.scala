@@ -2,51 +2,27 @@ package com.misterjvm.reviewboard.pages
 
 import com.misterjvm.reviewboard.common.Constants
 import com.misterjvm.reviewboard.components.*
+import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 import com.misterjvm.reviewboard.http.endpoints.ProgramEndpoints
 import com.raquo.laminar.api.L.{*, given}
 import org.scalajs.dom
+import sttp.capabilities.WebSockets
+import sttp.capabilities.zio.ZioStreams
 import sttp.client3.*
 import sttp.client3.impl.zio.FetchZioBackend
+import sttp.model.Uri
+import sttp.tapir.Endpoint
 import sttp.tapir.client.sttp.SttpClientInterpreter
 import zio.*
 
 object ProgramsPage {
 
-  val dummyProgram = Program(
-    1L,
-    "dummy-program",
-    "Dummy Program",
-    "http://dummyprograms.com",
-    1L,
-    "Dummy Dum",
-    PaymentType.LifetimeAccess,
-    None,
-    List("Ball Handling", "Weightlifting")
-  )
-
   val programsBus = EventBus[List[Program]]()
 
   def performBackendCall(): Unit = {
-    // fetch API
-    // AJAX
-    // ZIO endpoints
-    val programEndpoints                   = new ProgramEndpoints {}
-    val theEndpoint                        = programEndpoints.getAllEndpoint
-    val backend                            = FetchZioBackend()
-    val interpreter: SttpClientInterpreter = SttpClientInterpreter()
-    val request = interpreter
-      .toRequestThrowDecodeFailures(theEndpoint, Some(uri"http://localhost:8080"))
-      .apply(())
-
-    val programsZIO = backend.send(request).map(_.body).absolve
-    // run the ZIO effect
-
-    Unsafe.unsafe { implicit unsafe =>
-      Runtime.default.unsafe.fork(
-        programsZIO.tap(list => ZIO.attempt(programsBus.emit(list)))
-      )
-    }
+    val programsZIO = useBackend(_.program.getAllEndpoint(()))
+    programsZIO.emitTo(programsBus)
   }
 
   def apply() =
