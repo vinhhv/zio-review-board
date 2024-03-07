@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard.http.controllers
 
-import com.misterjvm.reviewboard.domain.data.{PaymentType, Program, User, UserID, UserToken}
+import com.misterjvm.reviewboard.domain.data
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program, ProgramFilter, User, UserID, UserToken}
 import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import com.misterjvm.reviewboard.services.{JWTService, ProgramService}
 import com.misterjvm.reviewboard.syntax.*
@@ -11,16 +12,16 @@ import sttp.tapir.generic.auto.*
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.stub.TapirStubInterpreter
 import sttp.tapir.ztapir.RIOMonadError
-import zio.*
 import zio.json.*
 import zio.test.*
+import zio.{Task, _}
 
 object ProgramControllerSpec extends ZIOSpecDefault {
 
   private given zioME: MonadError[Task] = new RIOMonadError[Any]
 
   private val pjf =
-    Program(1, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess)
+    Program(1, "pjf-performance", "PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess)
 
   private val serviceStub = new ProgramService {
     override def create(request: CreateProgramRequest): Task[Program] =
@@ -41,6 +42,11 @@ object ProgramControllerSpec extends ZIOSpecDefault {
         else None
       }
 
+    override def allFilters: Task[ProgramFilter] =
+      ZIO.succeed(ProgramFilter.empty)
+
+    override def search(filter: ProgramFilter): Task[List[Program]] =
+      ZIO.succeed(List())
   }
 
   private val jwtServiceStub = new JWTService {
@@ -75,7 +81,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           response <- basicRequest
             .post(uri"/programs")
             .body(
-              CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess).toJson
+              CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess).toJson
             )
             .header("Authorization", "Bearer TOKEN")
             .send(backendStub)
@@ -85,7 +91,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           respBody.toOption
             .flatMap(_.fromJson[Program].toOption)
             .contains(
-              Program(1, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess)
+              Program(1, "pjf-performance", "PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess)
             )
         }
       },
@@ -95,7 +101,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           response <- basicRequest
             .post(uri"/programs")
             .body(
-              CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess).toJson
+              CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess).toJson
             )
             .header("Authorization", "Bearer BAD_TOKEN")
             .send(backendStub)

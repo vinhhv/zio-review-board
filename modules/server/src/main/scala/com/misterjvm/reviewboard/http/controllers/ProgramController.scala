@@ -40,8 +40,13 @@ class ProgramController private (service: ProgramService, jwtService: JWTService
       service.allFilters.either
     }
 
+  val search: ServerEndpoint[Any, Task] =
+    searchEndpoint.serverLogic { filter =>
+      service.search(filter).either
+    }
+
   // ORDER MATTERS (allFilters must be BEFORE getById, otherwise it will always match getById)
-  override val routes: List[ServerEndpoint[Any, Task]] = List(create, getAll, allFilters, getById)
+  override val routes: List[ServerEndpoint[Any, Task]] = List(create, getAll, allFilters, search, getById)
 }
 
 object ProgramController {

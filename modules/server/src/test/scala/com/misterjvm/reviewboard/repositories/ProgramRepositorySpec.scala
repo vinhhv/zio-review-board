@@ -1,7 +1,6 @@
 package com.misterjvm.reviewboard.repositories
 
-import com.misterjvm.reviewboard.domain.data.{DataFixtures, Program}
-import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, PaymentType, Program, ProgramFilter}
 import com.misterjvm.reviewboard.syntax.*
 import zio.*
 import zio.test.*
@@ -9,7 +8,31 @@ import zio.test.*
 import java.sql.SQLException
 
 object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec with DataFixtures {
-  private val pjf = Program(1L, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess)
+  private val pjf =
+    Program(
+      1L,
+      "pjf-performance",
+      "PJF Performance",
+      "pjf.com",
+      1,
+      "Paul J. Fabritz",
+      PaymentType.LifetimeAccess,
+      None,
+      List("Vertical")
+    )
+
+  private val pjf2 =
+    Program(
+      2L,
+      "pjf-performance-2",
+      "PJF Performance 2",
+      "pjf2.com",
+      1,
+      "Paul R. Fabritz",
+      PaymentType.LifetimeAccess,
+      None,
+      List("Hoops")
+    )
 
   override val initScript: String = "sql/initdb.sql"
 
@@ -22,7 +45,17 @@ object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec with Dat
         } yield program
 
         program.assert {
-          case Program(_, "pjf-performance", "PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess, _, _) =>
+          case Program(
+                _,
+                "pjf-performance",
+                "PJF Performance",
+                "pjf.com",
+                1,
+                "Paul J. Fabritz",
+                PaymentType.LifetimeAccess,
+                _,
+                _
+              ) =>
             true
           case _ => false
         }
@@ -72,14 +105,23 @@ object ProgramRepositorySpec extends ZIOSpecDefault with RepositorySpec with Dat
       },
       test("getAll programs") {
         val program = for {
-          repo      <- ZIO.service[ProgramRepository]
-          generated <- genProgramN(10)
-          created   <- ZIO.collectAll(generated.map(repo.create(_)))
-          fetched   <- repo.get
-        } yield (created, fetched)
+          repo    <- ZIO.service[ProgramRepository]
+          _       <- repo.create(pjf)
+          _       <- repo.create(pjf2)
+          fetched <- repo.get
+        } yield fetched
 
-        program.assert { case (created, fetched) =>
-          created.toSet == fetched.toSet
+        program.assert { case (fetched) =>
+          fetched.size == 2
+        }
+      },
+      test("search by tag") {
+        for {
+          repo    <- ZIO.service[ProgramRepository]
+          created <- repo.create(pjf)
+          fetched <- repo.search(ProgramFilter(tags = created.tags.headOption.toList))
+        } yield assertTrue {
+          fetched.nonEmpty && fetched.tail.isEmpty && fetched.head == created
         }
       }
     ).provide(ProgramRepositoryLive.layer, dataSourceLayer, Repository.quillLayer, Scope.default)

@@ -20,17 +20,17 @@ import zio.*
   *   a. make the backend search
   *   b. refetch programs when user clicks the filter
   */
-object FilterPanel {
+class FilterPanel {
   final case class CheckValueEvent(groupName: String, value: String, checked: Boolean)
 
-  val GROUP_TRAINERS      = "Locations"
-  val GROUP_PAYMENT_TYPES = "Payments"
-  val GROUP_TAGS          = "Tags"
+  private val GROUP_TRAINERS      = "Trainers"
+  private val GROUP_PAYMENT_TYPES = "Payments"
+  private val GROUP_TAGS          = "Tags"
 
-  val possibleFilter = EventBus[ProgramFilter]()
-  val checkEvents    = EventBus[CheckValueEvent]()
-  val clicks         = EventBus[Unit]() // clicks on "Apply Filters" button
-  val dirty = clicks.events
+  private val possibleFilter = EventBus[ProgramFilter]()
+  private val checkEvents    = EventBus[CheckValueEvent]()
+  private val clicks         = EventBus[Unit]() // clicks on "Apply Filters" button
+  private val dirty = clicks.events
     .mapTo(false)
     .mergeWith(
       checkEvents.events.mapTo(true)
@@ -54,10 +54,12 @@ object FilterPanel {
         )
       }
 
+  // informs ProgramPage to re-render and re-search programs
+  val triggerFilters: EventStream[ProgramFilter] = clicks.events.withCurrentValueOf(state)
+
   def apply() =
     div(
       onMountCallback(_ => ZJS.useBackend(_.program.allFiltersEndpoint(())).emitTo(possibleFilter)),
-      child.text <-- state.map(_.toString),
       cls    := "accordion accordion-flush",
       idAttr := "accordionFlushExample",
       div(

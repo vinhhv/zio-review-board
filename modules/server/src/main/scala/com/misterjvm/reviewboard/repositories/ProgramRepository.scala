@@ -13,6 +13,7 @@ trait ProgramRepository {
   def update(id: Long, op: Program => Program): Task[Program]
   def delete(id: Long): Task[Program]
   def uniqueAttributes: Task[ProgramFilter]
+  def search(filter: ProgramFilter): Task[List[Program]]
 }
 
 class ProgramRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends ProgramRepository {
@@ -74,6 +75,18 @@ class ProgramRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends P
       paymentTypes <- run(query[Program].map(_.paymentType).distinct)
       tags         <- run(query[Program].map(_.tags)).map(_.flatten.toSet.toList)
     } yield ProgramFilter(trainers, paymentTypes, tags)
+
+  override def search(filter: ProgramFilter): Task[List[Program]] =
+    if (filter.isEmpty) get
+    else
+      run {
+        query[Program]
+          .filter { program =>
+            liftQuery(filter.trainers.toSet).contains(program.trainerName) ||
+            liftQuery(filter.paymentTypes.toSet).contains(program.paymentType) ||
+            sql"${program.tags} && ${lift(filter.tags)}".asCondition
+          }
+      }
 }
 
 object ProgramRepositoryLive {

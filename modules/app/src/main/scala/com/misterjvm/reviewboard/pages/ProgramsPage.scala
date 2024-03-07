@@ -18,16 +18,18 @@ import zio.*
 
 object ProgramsPage {
 
-  val programsBus = EventBus[List[Program]]()
+  // components
+  val filterPanel = new FilterPanel
 
-  def performBackendCall(): Unit = {
-    val programsZIO = useBackend(_.program.getAllEndpoint(()))
-    programsZIO.emitTo(programsBus)
-  }
+  val programEvents: EventStream[List[Program]] =
+    useBackend(_.program.getAllEndpoint(())).toEventStream.mergeWith {
+      filterPanel.triggerFilters.flatMap { newFilter =>
+        useBackend(_.program.searchEndpoint(newFilter)).toEventStream
+      }
+    }
 
   def apply() =
     sectionTag(
-      onMountCallback(_ => performBackendCall()),
       cls := "section-1",
       div(
         cls := "container program-list-hero",
@@ -42,11 +44,11 @@ object ProgramsPage {
           cls := "row jvm-recent-programs-body",
           div(
             cls := "col-lg-4",
-            FilterPanel()
+            filterPanel()
           ),
           div(
             cls := "col-lg-8",
-            children <-- programsBus.events.map(_.map(renderProgram))
+            children <-- programEvents.map(_.map(renderProgram))
           )
         )
       )

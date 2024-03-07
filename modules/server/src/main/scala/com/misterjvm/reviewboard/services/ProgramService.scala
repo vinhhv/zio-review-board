@@ -15,6 +15,7 @@ trait ProgramService {
   def getById(id: Long): Task[Option[Program]]
   def getBySlug(slug: String): Task[Option[Program]]
   def allFilters: Task[ProgramFilter]
+  def search(filter: ProgramFilter): Task[List[Program]]
 }
 
 class ProgramServiceLive private (repo: ProgramRepository) extends ProgramService {
@@ -32,6 +33,9 @@ class ProgramServiceLive private (repo: ProgramRepository) extends ProgramServic
 
   override def allFilters: Task[ProgramFilter] =
     repo.uniqueAttributes
+
+  override def search(filter: ProgramFilter): Task[List[Program]] =
+    repo.search(filter)
 }
 
 object ProgramServiceLive {

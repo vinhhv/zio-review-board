@@ -44,4 +44,14 @@ trait ProgramEndpoints extends BaseEndpoint {
       .in("programs" / "filters")
       .get
       .out(jsonBody[ProgramFilter])
+
+  val searchEndpoint =
+    baseEndpoint
+      .tag("Programs")
+      .name("search")
+      .description("Get programs based on filters")
+      .in("programs" / "search")
+      .post
+      .in(jsonBody[ProgramFilter])
+      .out(jsonBody[List[Program]])
 }
