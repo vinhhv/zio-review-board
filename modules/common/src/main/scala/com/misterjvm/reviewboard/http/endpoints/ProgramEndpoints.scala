@@ -1,11 +1,11 @@
 package com.misterjvm.reviewboard.http.endpoints
 
+import com.misterjvm.reviewboard.domain.data.{Program, ProgramFilter}
+import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import sttp.tapir.*
 import sttp.tapir.generic.auto.*
 import sttp.tapir.json.zio.*
 import zio.*
-import com.misterjvm.reviewboard.domain.data.Program
-import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 
 trait ProgramEndpoints extends BaseEndpoint {
   val createEndpoint =
@@ -35,4 +35,13 @@ trait ProgramEndpoints extends BaseEndpoint {
       .in("programs" / path[String]("id"))
       .get
       .out(jsonBody[Option[Program]])
+
+  val allFiltersEndpoint =
+    baseEndpoint
+      .tag("Programs")
+      .name("allFilters")
+      .description("Get all possible search filters")
+      .in("programs" / "filters")
+      .get
+      .out(jsonBody[ProgramFilter])
 }

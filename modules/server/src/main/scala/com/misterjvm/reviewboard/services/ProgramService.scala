@@ -14,20 +14,24 @@ trait ProgramService {
   def getAll: Task[List[Program]]
   def getById(id: Long): Task[Option[Program]]
   def getBySlug(slug: String): Task[Option[Program]]
+  def allFilters: Task[ProgramFilter]
 }
 
 class ProgramServiceLive private (repo: ProgramRepository) extends ProgramService {
-  def create(request: CreateProgramRequest): Task[Program] =
+  override def create(request: CreateProgramRequest): Task[Program] =
     repo.create(request.toProgram(-1L))
 
-  def getAll: Task[List[Program]] =
+  override def getAll: Task[List[Program]] =
     repo.get
 
-  def getById(id: Long): Task[Option[Program]] =
+  override def getById(id: Long): Task[Option[Program]] =
     repo.getById(id)
 
-  def getBySlug(slug: String): Task[Option[Program]] =
+  override def getBySlug(slug: String): Task[Option[Program]] =
     repo.getBySlug(slug)
+
+  override def allFilters: Task[ProgramFilter] =
+    repo.uniqueAttributes
 }
 
 object ProgramServiceLive {

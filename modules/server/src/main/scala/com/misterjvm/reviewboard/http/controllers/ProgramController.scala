@@ -1,12 +1,12 @@
 package com.misterjvm.reviewboard.http.controllers
 
+import com.misterjvm.reviewboard.domain.data.UserID
 import com.misterjvm.reviewboard.http.endpoints.ProgramEndpoints
 import com.misterjvm.reviewboard.services.{JWTService, ProgramService}
 import sttp.tapir.server.ServerEndpoint
 import zio.*
 
 import scala.collection.mutable
-import com.misterjvm.reviewboard.domain.data.UserID
 
 class ProgramController private (service: ProgramService, jwtService: JWTService)
     extends BaseController
@@ -35,7 +35,13 @@ class ProgramController private (service: ProgramService, jwtService: JWTService
       .either
   }
 
-  override val routes: List[ServerEndpoint[Any, Task]] = List(create, getAll, getById)
+  val allFilters: ServerEndpoint[Any, Task] =
+    allFiltersEndpoint.serverLogic { _ =>
+      service.allFilters.either
+    }
+
+  // ORDER MATTERS (allFilters must be BEFORE getById, otherwise it will always match getById)
+  override val routes: List[ServerEndpoint[Any, Task]] = List(create, getAll, allFilters, getById)
 }
 
 object ProgramController {

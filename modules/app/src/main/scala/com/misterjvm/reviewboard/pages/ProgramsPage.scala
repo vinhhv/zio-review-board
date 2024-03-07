@@ -42,7 +42,7 @@ object ProgramsPage {
           cls := "row jvm-recent-programs-body",
           div(
             cls := "col-lg-4",
-            div("TODO filter panel here")
+            FilterPanel()
           ),
           div(
             cls := "col-lg-8",

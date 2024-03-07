@@ -12,6 +12,7 @@ trait ProgramRepository {
   def get: Task[List[Program]]
   def update(id: Long, op: Program => Program): Task[Program]
   def delete(id: Long): Task[Program]
+  def uniqueAttributes: Task[ProgramFilter]
 }
 
 class ProgramRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends ProgramRepository {
@@ -28,27 +29,27 @@ class ProgramRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends P
 
   private given Decoder[PaymentType] = decoder(row => index => PaymentType.valueOf(row.getObject(index).toString))
 
-  def create(program: Program): Task[Program] =
+  override def create(program: Program): Task[Program] =
     run {
       query[Program]
         .insertValue(lift(program))
         .returning(program => program)
     }
 
-  def getById(id: Long): Task[Option[Program]] =
+  override def getById(id: Long): Task[Option[Program]] =
     run {
       query[Program].filter(_.id == lift(id))
     }.map(_.headOption)
 
-  def getBySlug(slug: String): Task[Option[Program]] =
+  override def getBySlug(slug: String): Task[Option[Program]] =
     run {
       query[Program].filter(_.slug == lift(slug))
     }.map(_.headOption)
 
-  def get: Task[List[Program]] =
+  override def get: Task[List[Program]] =
     run(query[Program])
 
-  def update(id: Long, op: Program => Program): Task[Program] =
+  override def update(id: Long, op: Program => Program): Task[Program] =
     for {
       current <- getById(id).someOrFail(new RuntimeException(s"Could not update: missing ID $id"))
       updated <- run {
@@ -59,13 +60,20 @@ class ProgramRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends P
       }
     } yield updated
 
-  def delete(id: Long): Task[Program] =
+  override def delete(id: Long): Task[Program] =
     run {
       query[Program]
         .filter(_.id == lift(id))
         .delete
         .returning(program => program)
     }
+
+  override def uniqueAttributes: Task[ProgramFilter] =
+    for {
+      trainers     <- run(query[Program].map(_.trainerName).distinct)
+      paymentTypes <- run(query[Program].map(_.paymentType).distinct)
+      tags         <- run(query[Program].map(_.tags)).map(_.flatten.toSet.toList)
+    } yield ProgramFilter(trainers, paymentTypes, tags)
 }
 
 object ProgramRepositoryLive {
