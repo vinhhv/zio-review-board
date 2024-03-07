@@ -4,6 +4,9 @@ import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.codecs.*
 import org.scalajs.dom
 import zio.*
+import com.misterjvm.reviewboard.domain.data.ProgramFilter
+import com.misterjvm.reviewboard.core.ZJS.*
+import com.misterjvm.reviewboard.core.ZJS
 
 /**
   * 1. Populate the panel with the right values
@@ -18,8 +21,16 @@ import zio.*
   *   b. refetch programs when user clicks the filter
   */
 object FilterPanel {
+
+  val GROUP_TRAINERS      = "Locations"
+  val GROUP_PAYMENT_TYPES = "Payments"
+  val GROUP_TAGS          = "Tags"
+
+  val possibleFilter = EventBus[ProgramFilter]()
+
   def apply() =
     div(
+      onMountCallback(_ => ZJS.useBackend(_.program.allFiltersEndpoint(())).emitTo(possibleFilter)),
       cls    := "accordion accordion-flush",
       idAttr := "accordionFlushExample",
       div(
@@ -51,10 +62,9 @@ object FilterPanel {
           htmlAttr("data-bs-parent", StringAsIsCodec)  := "#accordionFlushExample",
           div(
             cls := "accordion-body p-0",
-            renderFilterOptions("Locations", List("London", "Paris")),
-            renderFilterOptions("Countries", List("UK", "France")),
-            renderFilterOptions("Industries", List("Banking", "Aviation")),
-            renderFilterOptions("Tags", List("Scala", "ZIO", "Typelevel")),
+            renderFilterOptions(GROUP_TRAINERS, _.trainers),
+            renderFilterOptions(GROUP_PAYMENT_TYPES, _.paymentTypes.map(_.toString)),
+            renderFilterOptions(GROUP_TAGS, _.tags),
             div(
               cls := "jvm-accordion-search-btn",
               button(
@@ -68,7 +78,7 @@ object FilterPanel {
       )
     )
 
-  def renderFilterOptions(groupName: String, options: List[String]) =
+  def renderFilterOptions(groupName: String, optionsFn: ProgramFilter => List[String]) =
     div(
       cls := "accordion-item",
       h2(
@@ -93,23 +103,27 @@ object FilterPanel {
           cls := "accordion-body",
           div(
             cls := "mb-3",
-            options.map { value =>
-              div(
-                cls := "form-check",
-                label(
-                  cls   := "form-check-label",
-                  forId := s"filter-$groupName-$value",
-                  value
-                ),
-                input(
-                  cls    := "form-check-input",
-                  `type` := "checkbox",
-                  idAttr := s"filter-$groupName-$value"
-                )
-              )
-            }
+            // stateful Signal + Var
+            children <-- possibleFilter.events
+              .toSignal(ProgramFilter.empty)
+              .map(filter => optionsFn(filter).map(value => renderCheckbox(groupName, value)))
           )
         )
+      )
+    )
+
+  private def renderCheckbox(groupName: String, value: String) =
+    div(
+      cls := "form-check",
+      label(
+        cls   := "form-check-label",
+        forId := s"filter-$groupName-$value",
+        value
+      ),
+      input(
+        cls    := "form-check-input",
+        `type` := "checkbox",
+        idAttr := s"filter-$groupName-$value"
       )
     )
 }
