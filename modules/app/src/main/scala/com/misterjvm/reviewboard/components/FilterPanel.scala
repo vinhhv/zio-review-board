@@ -1,12 +1,12 @@
 package com.misterjvm.reviewboard.components
 
+import com.misterjvm.reviewboard.core.ZJS
+import com.misterjvm.reviewboard.core.ZJS.*
+import com.misterjvm.reviewboard.domain.data.{PaymentType, ProgramFilter}
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.codecs.*
 import org.scalajs.dom
 import zio.*
-import com.misterjvm.reviewboard.domain.data.ProgramFilter
-import com.misterjvm.reviewboard.core.ZJS.*
-import com.misterjvm.reviewboard.core.ZJS
 
 /**
   * 1. Populate the panel with the right values
@@ -21,16 +21,43 @@ import com.misterjvm.reviewboard.core.ZJS
   *   b. refetch programs when user clicks the filter
   */
 object FilterPanel {
+  final case class CheckValueEvent(groupName: String, value: String, checked: Boolean)
 
   val GROUP_TRAINERS      = "Locations"
   val GROUP_PAYMENT_TYPES = "Payments"
   val GROUP_TAGS          = "Tags"
 
   val possibleFilter = EventBus[ProgramFilter]()
+  val checkEvents    = EventBus[CheckValueEvent]()
+  val clicks         = EventBus[Unit]() // clicks on "Apply Filters" button
+  val dirty = clicks.events
+    .mapTo(false)
+    .mergeWith(
+      checkEvents.events.mapTo(true)
+    ) // Emit either true or false depending on whether to activate apply button
+
+  // Map[String, Set[String]] -> ProgramFilter
+  val state: Signal[ProgramFilter] =
+    checkEvents.events
+      .scanLeft(Map[String, Set[String]]()) { (currentMap, event) =>
+        event match {
+          case CheckValueEvent(groupName, value, checked) =>
+            if (checked) currentMap + (groupName -> (currentMap.getOrElse(groupName, Set()) + value))
+            else currentMap + (groupName         -> (currentMap.getOrElse(groupName, Set()) - value))
+        }
+      } // Signal[Map[String, Set[String]]]
+      .map { checkMap =>
+        ProgramFilter(
+          trainers = checkMap.getOrElse(GROUP_TRAINERS, Set()).toList,
+          paymentTypes = checkMap.getOrElse(GROUP_PAYMENT_TYPES, Set()).toList.map(PaymentType.valueOf),
+          tags = checkMap.getOrElse(GROUP_TAGS, Set()).toList
+        )
+      }
 
   def apply() =
     div(
       onMountCallback(_ => ZJS.useBackend(_.program.allFiltersEndpoint(())).emitTo(possibleFilter)),
+      child.text <-- state.map(_.toString),
       cls    := "accordion accordion-flush",
       idAttr := "accordionFlushExample",
       div(
@@ -65,14 +92,7 @@ object FilterPanel {
             renderFilterOptions(GROUP_TRAINERS, _.trainers),
             renderFilterOptions(GROUP_PAYMENT_TYPES, _.paymentTypes.map(_.toString)),
             renderFilterOptions(GROUP_TAGS, _.tags),
-            div(
-              cls := "jvm-accordion-search-btn",
-              button(
-                cls    := "btn btn-primary",
-                `type` := "button",
-                "Apply Filters"
-              )
-            )
+            renderApplyButton()
           )
         )
       )
@@ -123,7 +143,21 @@ object FilterPanel {
       input(
         cls    := "form-check-input",
         `type` := "checkbox",
-        idAttr := s"filter-$groupName-$value"
+        idAttr := s"filter-$groupName-$value",
+        onChange.mapToChecked.map(CheckValueEvent(groupName, value, _)) --> checkEvents
       )
     )
+
+  private def renderApplyButton() =
+    div(
+      cls := "jvm-accordion-search-btn",
+      button(
+        disabled <-- dirty.toSignal(false).map(v => !v),
+        onClick.mapTo(()) --> clicks,
+        cls    := "btn btn-primary",
+        `type` := "button",
+        "Apply Filters"
+      )
+    )
+
 }
