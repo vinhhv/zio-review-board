@@ -77,30 +77,35 @@ object LoginPage {
           form(
             nameAttr := "signin",
             cls      := "form",
-            idAttr   := "form",
-            renderInput(
-              "Email",
-              "email-input",
-              "text",
-              true,
-              "Your email",
-              (s, e) => s.copy(email = e, showStatus = false, upstreamError = None)
-            ),
-            renderInput(
-              "Password",
-              "password-input",
-              "password",
-              true,
-              "Your password",
-              (s, p) => s.copy(password = p, showStatus = false, upstreamError = None)
-            ),
-            button(
-              `type` := "button",
-              "Log In",
-              onClick.preventDefault.mapTo(stateVar.now()) --> submitter
-            )
-          )
+            idAttr   := "form"
+          ),
+          renderChildren()
         )
+      )
+    )
+
+  def renderChildren() =
+    List(
+      renderInput(
+        "Email",
+        "email-input",
+        "text",
+        true,
+        "Your email",
+        (s, e) => s.copy(email = e, showStatus = false, upstreamError = None)
+      ),
+      renderInput(
+        "Password",
+        "password-input",
+        "password",
+        true,
+        "Your password",
+        (s, p) => s.copy(password = p, showStatus = false, upstreamError = None)
+      ),
+      button(
+        `type` := "button",
+        "Log In",
+        onClick.preventDefault.mapTo(stateVar.now()) --> submitter
       )
     )
 
