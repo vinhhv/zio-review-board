@@ -12,6 +12,7 @@ import zio.*
 
 trait BackendClient {
   val program: ProgramEndpoints
+  val user: UserEndpoints
   def endpointRequestZIO[I, E <: Throwable, O](endpoint: Endpoint[Unit, I, E, O, Any])(payload: I): Task[O]
 }
 
@@ -21,6 +22,7 @@ class BackendClientLive(
     config: BackendClientConfig
 ) extends BackendClient {
   override val program: ProgramEndpoints = new ProgramEndpoints {}
+  override val user: UserEndpoints       = new UserEndpoints {}
 
   private def endpointRequest[I, E, O](endpoint: Endpoint[Unit, I, E, O, Any]): I => Request[Either[E, O], Any] =
     interpreter
