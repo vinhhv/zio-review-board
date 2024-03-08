@@ -4,7 +4,9 @@ import com.misterjvm.reviewboard.common.Constants
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.http.requests.RegisterUserAccount
 import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.nodes.ReactiveHtmlElement
 import org.scalajs.dom
+import org.scalajs.dom.HTMLElement
 import zio.*
 
 final case class SignUpFormState(
@@ -59,7 +61,7 @@ object SignUpPage extends FormPage[SignUpFormState]("Sign Up") {
     }
   }
 
-  override def renderChildren() =
+  override def renderChildren(): List[ReactiveHtmlElement[HTMLElement]] =
     List(
       renderInput(
         "Email",

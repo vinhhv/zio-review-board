@@ -5,8 +5,10 @@ import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.core.*
 import com.misterjvm.reviewboard.http.requests.LoginRequest
 import com.raquo.laminar.api.L.{*, given}
+import com.raquo.laminar.nodes.ReactiveHtmlElement
 import frontroute.BrowserNavigation
 import org.scalajs.dom
+import org.scalajs.dom.HTMLElement
 import zio.*
 
 final case class LoginFormState(
@@ -47,7 +49,7 @@ object LoginPage extends FormPage[LoginFormState]("Log In") {
     }
   }
 
-  override def renderChildren() =
+  override def renderChildren(): List[ReactiveHtmlElement[HTMLElement]] =
     List(
       renderInput(
         "Email",
