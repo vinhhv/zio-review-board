@@ -1,7 +1,7 @@
 package com.misterjvm.reviewboard.pages
 
 import com.misterjvm.reviewboard.common.*
-import com.misterjvm.reviewboard.core.ZJS
+import com.misterjvm.reviewboard.core.*
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.http.requests.LoginRequest
 import com.raquo.laminar.api.L.{*, given}
@@ -36,6 +36,7 @@ object LoginPage {
       useBackend(_.user.loginEndpoint(LoginRequest(state.email, state.password)))
         .map { userToken =>
           // TODO: set user token
+          Session.setUserState(userToken)
           stateVar.set(State())
           BrowserNavigation.replaceState("/")
         }

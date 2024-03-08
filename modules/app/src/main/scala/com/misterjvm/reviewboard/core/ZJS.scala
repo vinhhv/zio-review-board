@@ -30,7 +30,7 @@ object ZJS {
 
     def runJS =
       Unsafe.unsafe { implicit unsafe =>
-        Runtime.default.unsafe.runToFuture(zio.provide(BackendClientLive.configuredLayer))
+        Runtime.default.unsafe.fork(zio.provide(BackendClientLive.configuredLayer))
       }
   }
 

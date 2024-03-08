@@ -21,8 +21,10 @@ object ProgramsPage {
   // components
   val filterPanel = new FilterPanel
 
+  val firstBatch = EventBus[List[Program]]()
+
   val programEvents: EventStream[List[Program]] =
-    useBackend(_.program.getAllEndpoint(())).toEventStream.mergeWith {
+    firstBatch.events.mergeWith {
       filterPanel.triggerFilters.flatMap { newFilter =>
         useBackend(_.program.searchEndpoint(newFilter)).toEventStream
       }
@@ -30,6 +32,7 @@ object ProgramsPage {
 
   def apply() =
     sectionTag(
+      onMountCallback(_ => useBackend(_.program.getAllEndpoint(())).emitTo(firstBatch)),
       cls := "section-1",
       div(
         cls := "container program-list-hero",

@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard
 
 import com.misterjvm.reviewboard.components.*
+import com.misterjvm.reviewboard.core.Session
 import com.raquo.airstream.ownership.OneTimeOwner
 import com.raquo.airstream.timing.PeriodicStream
 import com.raquo.laminar.api.L.{*, given}
@@ -12,6 +13,7 @@ import scala.util.Try
 object App {
 
   val app = div(
+    onMountCallback(_ => Session.loadUserState()),
     Header(),
     Router()
   ).amend(LinkHandler.bind) // for internal links
