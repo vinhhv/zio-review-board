@@ -35,6 +35,7 @@ abstract class FormPage[S <: FormState](title: String) {
         div(
           cls := "logo",
           img(
+            cls := "home-logo",
             src := Constants.logoImage,
             alt := "Nothing but Net"
           )
@@ -69,7 +70,7 @@ abstract class FormPage[S <: FormState](title: String) {
     case Right(message) =>
       div(
         cls := "page-status-success",
-        child.text <-- stateVar.signal.map(_.toString)
+        message
       )
   }
 
