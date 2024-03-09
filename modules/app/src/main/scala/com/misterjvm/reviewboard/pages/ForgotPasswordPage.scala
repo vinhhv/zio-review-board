@@ -26,8 +26,7 @@ final case class ForgotPasswordState(
 }
 
 object ForgotPasswordPage extends FormPage[ForgotPasswordState]("Forgot Password") {
-
-  override val stateVar: Var[ForgotPasswordState] = Var(ForgotPasswordState())
+  def basicState = ForgotPasswordState()
 
   val submitter = Observer[ForgotPasswordState] { state =>
     if (state.hasErrors) {

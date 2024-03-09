@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard.services
 
 import com.misterjvm.reviewboard.domain.data.{User, UserToken}
+import com.misterjvm.reviewboard.domain.errors.*
 import com.misterjvm.reviewboard.repositories.{RecoveryTokensRepository, UserRepository, UserRepositoryLive}
 import zio.*
 
@@ -101,7 +102,7 @@ class UserServiceLive private (
       existingUser <-
         userRepo
           .getByEmail(email)
-          .someOrFail(new RuntimeException(s"User $email does not exist"))
+          .someOrFail(UserServiceLive.nonexistentUserError(email))
       isTokenValid <- tokenRepo.checkToken(email, token)
       wasPasswordRecovered <-
         userRepo
@@ -121,8 +122,8 @@ object UserServiceLive {
     } yield new UserServiceLive(jwtService, emailService, userRepo, tokenRepo)
   }
 
-  def nonexistentUserError(email: String): RuntimeException = new RuntimeException(
-    s"Cannot verify user $email: nonexistent"
+  def nonexistentUserError(email: String): RuntimeException = UnauthorizedException(
+    s"Email or password is incorrect."
   )
 
   object Hasher {

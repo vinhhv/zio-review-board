@@ -1,13 +1,13 @@
 package com.misterjvm.reviewboard.http.controllers
 
 import com.misterjvm.reviewboard.domain.data.UserID
+import com.misterjvm.reviewboard.domain.errors.UnauthorizedException
 import com.misterjvm.reviewboard.http.endpoints.UserEndpoints
 import com.misterjvm.reviewboard.http.responses.UserResponse
 import com.misterjvm.reviewboard.services.{JWTService, UserService}
 import sttp.tapir.*
 import sttp.tapir.server.*
 import zio.*
-import com.misterjvm.reviewboard.domain.errors.UnauthorizedException
 
 class UserController private (userService: UserService, jwtService: JWTService)
     extends BaseController
@@ -25,7 +25,7 @@ class UserController private (userService: UserService, jwtService: JWTService)
     .serverLogic { req =>
       userService
         .generateToken(req.email, req.password)
-        .someOrFail(UnauthorizedException)
+        .someOrFail(UnauthorizedException("Email or password is incorrect"))
         .either
     }
 
@@ -62,7 +62,7 @@ class UserController private (userService: UserService, jwtService: JWTService)
       .serverLogic { req =>
         userService
           .recoverPasswordFromToken(req.email, req.token, req.newPassword)
-          .filterOrFail(didRecover => didRecover)(UnauthorizedException)
+          .filterOrFail(didRecover => didRecover)(UnauthorizedException("The email/token combination is invalid"))
           .unit
           .either
       }

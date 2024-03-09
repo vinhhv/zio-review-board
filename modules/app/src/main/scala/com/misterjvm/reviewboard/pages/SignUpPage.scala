@@ -32,7 +32,7 @@ final case class SignUpFormState(
 }
 
 object SignUpPage extends FormPage[SignUpFormState]("Sign Up") {
-  override val stateVar = Var(SignUpFormState())
+  override def basicState = SignUpFormState()
 
   val submitter = Observer[SignUpFormState] { state =>
     if (state.hasErrors) {

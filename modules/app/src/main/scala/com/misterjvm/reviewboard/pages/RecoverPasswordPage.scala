@@ -33,7 +33,7 @@ final case class RecoverPasswordState(
 
 object RecoverPasswordPage extends FormPage[RecoverPasswordState]("Reset Password") {
 
-  override val stateVar: Var[RecoverPasswordState] = Var(RecoverPasswordState())
+  override def basicState = RecoverPasswordState()
 
   val submitter = Observer[RecoverPasswordState] { state =>
     if (state.hasErrors) {
