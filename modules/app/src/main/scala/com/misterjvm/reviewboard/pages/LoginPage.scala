@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard.pages
 
 import com.misterjvm.reviewboard.common.*
+import com.misterjvm.reviewboard.components.Anchors
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.core.*
 import com.misterjvm.reviewboard.http.requests.LoginRequest
@@ -71,6 +72,7 @@ object LoginPage extends FormPage[LoginFormState]("Log In") {
         `type` := "button",
         "Log In",
         onClick.preventDefault.mapTo(stateVar.now()) --> submitter
-      )
+      ),
+      Anchors.renderNavLink("Forgot Password?", "/forgot", "auth-link")
     )
 }

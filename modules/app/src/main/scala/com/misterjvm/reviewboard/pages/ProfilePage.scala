@@ -6,9 +6,8 @@ import com.misterjvm.reviewboard.http.requests.UpdatePasswordRequest
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import org.scalajs.dom
-import org.scalajs.dom.html
-import zio.*
 import org.scalajs.dom.HTMLElement
+import zio.*
 
 final case class ChangePasswordState(
     password: String = "",
@@ -35,7 +34,6 @@ object ProfilePage extends FormPage[ChangePasswordState]("Profile") {
     if (state.hasErrors) {
       stateVar.update(_.copy(showStatus = true))
     } else {
-      dom.console.log("BACKEND REQUEST")
       useBackend(
         _.user.updatePasswordEndpoint(
           UpdatePasswordRequest(email, state.password, state.newPassword)
