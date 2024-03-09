@@ -12,7 +12,7 @@ trait RecoveryTokensRepository {
 }
 
 class RecoveryTokensRepositoryLive private (
-    tokenConfig: RecoveryTokensConfig,
+    config: RecoveryTokensConfig,
     quill: Quill.Postgres[SnakeCase],
     userRepo: UserRepository
 ) extends RecoveryTokensRepository {
@@ -21,8 +21,6 @@ class RecoveryTokensRepositoryLive private (
   inline given schema: SchemaMeta[PasswordRecoveryToken]  = schemaMeta[PasswordRecoveryToken]("recovery_tokens")
   inline given insMeta: InsertMeta[PasswordRecoveryToken] = insertMeta[PasswordRecoveryToken]()
   inline given upMeta: UpdateMeta[PasswordRecoveryToken]  = updateMeta[PasswordRecoveryToken](_.email)
-
-  private val tokenDuration = 600000 // TODO: pass this from config
 
   private def randomUppercaseString(len: Int): Task[String] = // AB12CD34
     ZIO.succeed(scala.util.Random.alphanumeric.take(len).mkString.toUpperCase)
@@ -36,7 +34,7 @@ class RecoveryTokensRepositoryLive private (
       _ <- run(
         query[PasswordRecoveryToken]
           .updateValue(
-            lift(PasswordRecoveryToken(email, token, java.lang.System.currentTimeMillis() + tokenDuration))
+            lift(PasswordRecoveryToken(email, token, java.lang.System.currentTimeMillis() + config.duration))
           )
           .returning(r => r)
       )
@@ -47,7 +45,9 @@ class RecoveryTokensRepositoryLive private (
       token <- randomUppercaseString(8)
       _ <- run(
         query[PasswordRecoveryToken]
-          .insertValue(lift(PasswordRecoveryToken(email, token, java.lang.System.currentTimeMillis() + tokenDuration)))
+          .insertValue(
+            lift(PasswordRecoveryToken(email, token, java.lang.System.currentTimeMillis() + config.duration))
+          )
           .returning(r => r)
       )
     } yield token
@@ -65,9 +65,15 @@ class RecoveryTokensRepositoryLive private (
     }
 
   override def checkToken(email: String, token: String): Task[Boolean] =
-    run(
-      query[PasswordRecoveryToken].filter(r => r.email == lift(email) && r.token == lift(token))
-    ).map(_.nonEmpty)
+    for {
+      now <- Clock.instant
+      checkValid <-
+        run(
+          query[PasswordRecoveryToken].filter(r =>
+            r.email == lift(email) && r.token == lift(token) && r.expiration > lift(now.toEpochMilli())
+          )
+        ).map(_.nonEmpty)
+    } yield checkValid
 }
 
 object RecoveryTokensRepositoryLive {
