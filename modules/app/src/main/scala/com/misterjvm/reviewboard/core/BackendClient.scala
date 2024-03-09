@@ -10,10 +10,14 @@ import sttp.tapir.Endpoint
 import sttp.tapir.client.sttp.SttpClientInterpreter
 import zio.*
 
+final case class RestrictedEndpointException(msg: String) extends RuntimeException
+
 trait BackendClient {
   val program: ProgramEndpoints
   val user: UserEndpoints
   def endpointRequestZIO[I, E <: Throwable, O](endpoint: Endpoint[Unit, I, E, O, Any])(payload: I): Task[O]
+
+  def secureEndpointRequestZIO[I, E <: Throwable, O](endpoint: Endpoint[String, I, E, O, Any])(payload: I): Task[O]
 }
 
 class BackendClientLive(
@@ -25,14 +29,36 @@ class BackendClientLive(
   override val user: UserEndpoints       = new UserEndpoints {}
 
   private def endpointRequest[I, E, O](endpoint: Endpoint[Unit, I, E, O, Any]): I => Request[Either[E, O], Any] =
-    interpreter
-      .toRequestThrowDecodeFailures(endpoint, config.uri)
+    interpreter.toRequestThrowDecodeFailures(endpoint, config.uri)
+
+  private def secureEndpointRequest[S, I, E, O](
+      endpoint: Endpoint[S, I, E, O, Any]
+  ): S => I => Request[Either[E, O], Any] =
+    interpreter.toSecureRequestThrowDecodeFailures(endpoint, config.uri)
 
   override def endpointRequestZIO[I, E <: Throwable, O](endpoint: Endpoint[Unit, I, E, O, Any])(payload: I): Task[O] =
     backend
       .send(endpointRequest(endpoint)(payload))
       .map(_.body)
       .absolve
+
+  private def tokenOrFail =
+    ZIO
+      .fromOption(Session.getUserState)
+      .orElseFail(RestrictedEndpointException("You need to log in."))
+      .map(_.token)
+
+  override def secureEndpointRequestZIO[I, E <: Throwable, O](
+      endpoint: Endpoint[String, I, E, O, Any]
+  )(payload: I): Task[O] =
+    for {
+      token <- tokenOrFail
+      response <-
+        backend
+          .send(secureEndpointRequest(endpoint)(token)(payload))
+          .map(_.body)
+          .absolve
+    } yield response
 }
 
 object BackendClientLive {

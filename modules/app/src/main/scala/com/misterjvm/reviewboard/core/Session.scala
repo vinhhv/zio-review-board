@@ -10,7 +10,10 @@ object Session {
   val stateName: String                 = "userState"
   val userState: Var[Option[UserToken]] = Var(Option.empty)
 
-  def isActive = userState.now().nonEmpty
+  def isActive = {
+    loadUserState()
+    userState.now().nonEmpty
+  }
 
   def setUserState(token: UserToken): Unit = {
     userState.set(Option(token))
@@ -26,13 +29,17 @@ object Session {
 
     // retrieve the user token (known to be valid)
     userState.set(
-      Storage
-        .get[UserToken](stateName)
+      Storage.get[UserToken](stateName)
     )
   }
 
   def clearUserState(): Unit = {
     Storage.remove(stateName)
     userState.set(Option.empty)
+  }
+
+  def getUserState: Option[UserToken] = {
+    loadUserState()
+    userState.now()
   }
 }

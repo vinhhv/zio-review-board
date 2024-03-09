@@ -9,6 +9,8 @@ import sttp.tapir.Endpoint
 import sttp.tapir.client.sttp.SttpClientInterpreter
 import zio.*
 
+import scala.annotation.targetName
+
 object ZJS {
   def useBackend = ZIO.serviceWithZIO[BackendClient]
 
@@ -38,9 +40,20 @@ object ZJS {
     def apply(payload: I): Task[O] = {
       ZIO
         .service[BackendClient]
-        .flatMap { backendClient =>
-          backendClient.endpointRequestZIO(endpoint)(payload)
-        }
+        .flatMap(
+          _.endpointRequestZIO(endpoint)(payload)
+        )
+        .provide(BackendClientLive.configuredLayer)
+    }
+
+  extension [I, E <: Throwable, O](endpoint: Endpoint[String, I, E, O, Any])
+    @targetName("applySecure")
+    def apply(payload: I): Task[O] = {
+      ZIO
+        .service[BackendClient]
+        .flatMap(
+          _.secureEndpointRequestZIO(endpoint)(payload)
+        )
         .provide(BackendClientLive.configuredLayer)
     }
 }
