@@ -1,13 +1,13 @@
 package com.misterjvm.reviewboard.pages
 
 import com.misterjvm.reviewboard.common.Constants
+import com.misterjvm.reviewboard.components.Anchors
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.http.requests.ForgotPasswordRequest
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import org.scalajs.dom
 import org.scalajs.dom.HTMLElement
-import org.scalajs.dom.html.Element
 import zio.*
 
 final case class ForgotPasswordState(
@@ -71,6 +71,11 @@ object ForgotPasswordPage extends FormPage[ForgotPasswordState]("Forgot Password
         `type` := "button",
         "Recover Password",
         onClick.preventDefault.mapTo(stateVar.now()) --> submitter
+      ),
+      Anchors.renderNavLink(
+        "Have a password recovery token?",
+        "/recover",
+        "auth-link"
       )
     )
 }
