@@ -1,19 +1,10 @@
 package com.misterjvm.reviewboard.pages
 
-import com.misterjvm.reviewboard.common.Constants
 import com.misterjvm.reviewboard.components.*
 import com.misterjvm.reviewboard.core.ZJS.*
-import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
-import com.misterjvm.reviewboard.http.endpoints.ProgramEndpoints
+import com.misterjvm.reviewboard.domain.data.Program
 import com.raquo.laminar.api.L.{*, given}
 import org.scalajs.dom
-import sttp.capabilities.WebSockets
-import sttp.capabilities.zio.ZioStreams
-import sttp.client3.*
-import sttp.client3.impl.zio.FetchZioBackend
-import sttp.model.Uri
-import sttp.tapir.Endpoint
-import sttp.tapir.client.sttp.SttpClientInterpreter
 import zio.*
 
 object ProgramsPage {
@@ -57,47 +48,6 @@ object ProgramsPage {
       )
     )
 
-  private def renderImage(program: Program) =
-    img(
-      cls := "img-fluid",
-      src := program.image.getOrElse(Constants.programLogoPlaceholder),
-      alt := program.name
-    )
-
-  private def renderDetail(icon: String, value: String, maybeLink: Option[String] = None) =
-    div(
-      cls := "program-detail",
-      i(cls := s"fa fa-$icon program-detail-icon"), {
-        maybeLink match
-          case None =>
-            p(
-              cls := "program-detail-value",
-              value
-            )
-          case Some(link) =>
-            a(
-              href   := link,
-              target := "blank",
-              p(
-                cls := "program-detail-value",
-                value
-              )
-            )
-      }
-    )
-
-  private def renderOverview(program: Program) =
-    div(
-      cls := "program-summary",
-      renderDetail(
-        "person",
-        program.trainerName,
-        Some(s"/trainer/${program.trainerId}")
-      ),
-      renderDetail("credit-card", program.paymentType.toString),
-      renderDetail("tags", program.tags.mkString(", "))
-    )
-
   private def renderAction(program: Program) =
     div(
       cls := "jvm-recent-programs-card-btn-apply",
@@ -117,7 +67,7 @@ object ProgramsPage {
       cls := "jvm-recent-programs-cards",
       div(
         cls := "jvm-recent-programs-card-img",
-        renderImage(program)
+        ProgramComponents.renderProgramLogo(program)
       ),
       div(
         cls := "jvm-recent-programs-card-contents",
@@ -128,7 +78,7 @@ object ProgramsPage {
             "program-title-link"
           )
         ),
-        renderOverview(program)
+        ProgramComponents.renderOverview(program)
       ),
       renderAction(program)
     )

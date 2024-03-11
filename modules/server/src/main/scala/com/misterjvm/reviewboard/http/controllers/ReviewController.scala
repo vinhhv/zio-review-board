@@ -1,11 +1,10 @@
 package com.misterjvm.reviewboard.http.controllers
 
+import com.misterjvm.reviewboard.domain.data.UserID
 import com.misterjvm.reviewboard.http.endpoints.ReviewEndpoints
-import com.misterjvm.reviewboard.services.ReviewService
+import com.misterjvm.reviewboard.services.{JWTService, ReviewService}
 import sttp.tapir.server.ServerEndpoint
 import zio.*
-import com.misterjvm.reviewboard.services.JWTService
-import com.misterjvm.reviewboard.domain.data.UserID
 
 class ReviewController private (service: ReviewService, jwtService: JWTService)
     extends BaseController
@@ -21,8 +20,11 @@ class ReviewController private (service: ReviewService, jwtService: JWTService)
   val getByProgramId: ServerEndpoint[Any, Task] =
     getByProgramIdEndpoint.serverLogic(programId => service.getByProgramId(programId).either)
 
+  val getByProgramSlug: ServerEndpoint[Any, Task] =
+    getByProgramSlugEndpoint.serverLogic(programSlug => service.getByProgramSlug(programSlug).either)
+
   override val routes: List[ServerEndpoint[Any, Task]] =
-    List(create, getById, getByProgramId)
+    List(create, getById, getByProgramSlug, getByProgramId)
 }
 
 object ReviewController {

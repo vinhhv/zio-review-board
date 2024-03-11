@@ -5,6 +5,7 @@ import zio.json.{DeriveJsonCodec, JsonCodec}
 
 final case class CreateReviewRequest(
     programId: Long,
+    programSlug: String,
     value: MetricScore,
     quality: MetricScore,
     content: MetricScore,

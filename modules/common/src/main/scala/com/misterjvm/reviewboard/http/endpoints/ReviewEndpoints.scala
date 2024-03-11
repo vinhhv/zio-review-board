@@ -42,4 +42,13 @@ trait ReviewEndpoints extends BaseEndpoint {
       .get
       .out(jsonBody[List[Review]])
 
+  val getByProgramSlugEndpoint =
+    baseEndpoint
+      .tag("Reviews")
+      .name("getByProgramSlug")
+      .description("Get reviews for a program by program slug")
+      .in("reviews" / "program" / "slug" / path[String]("slug"))
+      .get
+      .out(jsonBody[List[Review]])
+
 }

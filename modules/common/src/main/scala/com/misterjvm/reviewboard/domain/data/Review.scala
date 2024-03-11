@@ -7,6 +7,7 @@ import java.time.Instant
 final case class Review(
     id: Long,
     programId: Long,
+    programSlug: String,
     userId: Long,
     value: MetricScore,
     quality: MetricScore,

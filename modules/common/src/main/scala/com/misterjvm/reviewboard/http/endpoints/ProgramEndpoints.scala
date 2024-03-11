@@ -31,7 +31,7 @@ trait ProgramEndpoints extends BaseEndpoint {
     baseEndpoint
       .tag("programs")
       .name("getById")
-      .description("get program by its id (or maybe by slug?)") // TODO
+      .description("get program by its id or slug if string is passed")
       .in("programs" / path[String]("id"))
       .get
       .out(jsonBody[Option[Program]])

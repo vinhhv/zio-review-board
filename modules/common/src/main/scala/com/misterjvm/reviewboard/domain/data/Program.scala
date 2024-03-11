@@ -8,6 +8,7 @@ final case class Program(
     slug: String, // pjf-performance-ball-handling-code
     name: String, // "PJF Performance Ball Handling Code" -> hoops.com/programs/pjf-performance-ball-handling-code
     url: String,
+    // TODO: use trainer slug instead
     trainerId: Long,
     trainerName: String, // Paul J. Fabritz
     paymentType: PaymentType,

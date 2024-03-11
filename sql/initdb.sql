@@ -1,6 +1,21 @@
 CREATE DATABASE reviewboard;
 \c reviewboard;
 
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  hashed_password TEXT NOT NULL
+);
+
+INSERT INTO users(email, hashed_password) VALUES('vince@misterjvm.com', '1000:522A8F8FEF27AC8CDE10F23F4BDC76634594E3B24F17F743:119E61377766DFD35F63D48AFF3E4EEB3CDB1B503BFB137F');
+
+CREATE TABLE IF NOT EXISTS recovery_tokens (
+  email TEXT PRIMARY KEY,
+  token TEXT NOT NULL,
+  expiration BIGINT NOT NULL
+);
+
 -- TRAINERS
 
 CREATE TABLE IF NOT EXISTS trainers (
@@ -22,7 +37,7 @@ CREATE TABLE IF NOT EXISTS programs (
   slug TEXT UNIQUE NOT NULL,
   name TEXT UNIQUE NOT NULL,
   url TEXT UNIQUE NOT NULL,
-  trainer_id BIGSERIAL NOT NULL,
+  trainer_id BIGSERIAL NOT NULL REFERENCES trainers(id),
   trainer_name TEXT NOT NULL,
   payment_type payment_type NOT NULL,
   image TEXT,
@@ -38,8 +53,9 @@ CREATE TYPE metric_score AS ENUM('Poor', 'Fair', 'Good', 'Great', 'Amazing');
 
 CREATE TABLE IF NOT EXISTS reviews (
   id BIGSERIAL PRIMARY KEY,
-  program_id BIGSERIAL NOT NULL,
-  user_id BIGINT NOT NULL,
+  program_id BIGSERIAL NOT NULL REFERENCES programs(id),
+  program_slug TEXT NOT NULL REFERENCES programs(slug),
+  user_id BIGINT NOT NULL REFERENCES users(id),
   value metric_score NOT NULL,
   quality metric_score NOT NULL,
   content metric_score NOT NULL,
@@ -51,6 +67,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   created TIMESTAMP NOT NULL DEFAULT now(),
   updated TIMESTAMP NOT NULL DEFAULT now()
 );
+
+INSERT INTO reviews(program_id, program_slug, user_id, value, quality, content, user_experience, accessibility, support, would_recommend, review) VALUES(1, 'pjf-performance-unranked-academy', 1, 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Absolutely the best program out there for all hoopers!');
 
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
@@ -64,16 +82,3 @@ CREATE TRIGGER update_updated_column_before_update
 BEFORE UPDATE ON reviews
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
-
--- USERS
-CREATE TABLE IF NOT EXISTS users (
-  id BIGSERIAL PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  hashed_password TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS recovery_tokens (
-  email TEXT PRIMARY KEY,
-  token TEXT NOT NULL,
-  expiration BIGINT NOT NULL
-);

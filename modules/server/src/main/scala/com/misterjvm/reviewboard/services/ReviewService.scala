@@ -11,6 +11,7 @@ trait ReviewService {
   def create(request: CreateReviewRequest, userId: Long): Task[Review]
   def getById(id: Long): Task[Option[Review]]
   def getByProgramId(programId: Long): Task[List[Review]]
+  def getByProgramSlug(programSlug: String): Task[List[Review]]
   def getByUserId(userId: Long): Task[List[Review]]
 }
 
@@ -20,6 +21,7 @@ class ReviewServiceLive private (repo: ReviewRepository) extends ReviewService {
       Review(
         id = -1L,
         programId = request.programId,
+        programSlug = request.programSlug,
         userId = userId,
         value = request.value,
         quality = request.quality,
@@ -39,6 +41,9 @@ class ReviewServiceLive private (repo: ReviewRepository) extends ReviewService {
 
   override def getByProgramId(programId: Long): Task[List[Review]] =
     repo.getByProgramId(programId)
+
+  override def getByProgramSlug(programSlug: String): Task[List[Review]] =
+    repo.getByProgramSlug(programSlug)
 
   override def getByUserId(userId: Long): Task[List[Review]] =
     repo.getByUserId(userId)

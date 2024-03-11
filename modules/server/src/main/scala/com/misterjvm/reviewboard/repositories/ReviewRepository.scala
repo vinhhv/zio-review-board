@@ -9,6 +9,7 @@ trait ReviewRepository {
   def create(review: Review): Task[Review]
   def getById(id: Long): Task[Option[Review]]
   def getByProgramId(programId: Long): Task[List[Review]]
+  def getByProgramSlug(programSlug: String): Task[List[Review]]
   def getByUserId(userId: Long): Task[List[Review]]
   def update(id: Long, op: Review => Review): Task[Review]
   def delete(id: Long): Task[Review]
@@ -36,6 +37,9 @@ class ReviewRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends Re
 
   override def getByProgramId(programId: Long): Task[List[Review]] =
     run(query[Review].filter(_.programId == lift(programId)))
+
+  override def getByProgramSlug(programSlug: String): Task[List[Review]] =
+    run(query[Review].filter(_.programSlug == lift(programSlug)))
 
   override def getByUserId(userId: Long): Task[List[Review]] =
     run(query[Review].filter(_.userId == lift(userId)))
