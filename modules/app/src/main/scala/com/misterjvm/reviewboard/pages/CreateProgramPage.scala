@@ -6,11 +6,12 @@ import com.misterjvm.reviewboard.domain.data.PaymentType
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import org.scalajs.dom
+import org.scalajs.dom.*
 import org.scalajs.dom.html.Element
 import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import zio.*
-import org.scalajs.dom.File
-import org.scalajs.dom.FileReader
+import org.scalajs.dom.HTMLImageElement
+import org.scalajs.dom.HTMLCanvasElement
 
 final case class CreateProgramState(
     name: String = "",
@@ -100,12 +101,41 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
       )
     )
 
+  private def computeDimensions(width: Int, height: Int): (Int, Int) =
+    if (width >= height) {
+      val ratio     = width * 1.0 / 256
+      val newWidth  = width / ratio
+      val newHeight = height / ratio
+      (newWidth.toInt, newHeight.toInt)
+    } else {
+      val (newHeight, newWidth) = computeDimensions(height, width)
+      (newWidth, newHeight)
+    }
+
   val fileUploader = (files: List[File]) => {
     val maybeFile = files.headOption.filter(_.size > 0)
     maybeFile.foreach { file =>
       val reader = new FileReader
       reader.onload = _ => {
-        stateVar.update(_.copy(image = Some(reader.result.toString)))
+        // 256x256
+        // draw the picture into a 256x256 canvas
+        // make a fake img tag (not rendered) - img2
+        val fakeImage = document.createElement("img").asInstanceOf[HTMLImageElement]
+        fakeImage.addEventListener(
+          "load",
+          _ => {
+            val canvas          = document.createElement("canvas").asInstanceOf[HTMLCanvasElement]
+            val context         = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
+            val (width, height) = computeDimensions(fakeImage.width, fakeImage.height)
+            canvas.width = width
+            canvas.height = height
+            // render the original image into that canvas
+            context.drawImage(fakeImage, 0, 0, width, height)
+            // set the state to the text repr of img2
+            stateVar.update(_.copy(image = Some(canvas.toDataURL(file.`type`))))
+          }
+        )
+        fakeImage.src = reader.result.toString
       }
       reader.readAsDataURL(file)
     }
@@ -116,6 +146,9 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
       renderInput("Program Name", "name", "text", true, "PJF Performance", (s, v) => s.copy(name = v)),
       renderInput("Program URL", "url", "text", true, "https://pjfperformance.com", (s, v) => s.copy(url = v)),
       renderLogoUpload("Program logo", "logo"),
+      img(
+        src <-- stateVar.signal.map(_.image.getOrElse(""))
+      ),
       renderInput("Program Trainer", "trainer", "number", true, "1", (s, v) => s.copy(trainerId = v)),
       renderInput("Payment Type", "payment_type", "number", true, "0", (s, v) => s.copy(paymentType = v)),
       renderInput(
