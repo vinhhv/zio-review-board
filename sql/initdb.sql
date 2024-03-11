@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS trainers (
   image TEXT
 );
 
-INSERT INTO trainers(name, description, url, image) VALUES('Paul J. Fabritz', 'Popular NBA trainer', 'pjfperformance.net', NULL);
+INSERT INTO trainers(name, description, url, image) VALUES('Paul J. Fabritz', 'Popular NBA trainer', 'https://pjfperformance.net', NULL);
+INSERT INTO trainers(name, description, url, image) VALUES('Tyler Relph', 'Austin, TX NBA trainer', 'https://www.tylerrelphtraining.com/', NULL);
 
 -- PROGRAMS
 
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS programs (
 
 INSERT INTO programs(slug, name, url, trainer_id, trainer_name, payment_type, image, tags) VALUES('pjf-performance-unranked-academy', 'Unranked Academy', 'https://www.pjfperformance.com/unranked-basketball-academy/', 1, 'Paul J. Fabritz', 'Subscription', NULL, '{Strength,Shooting,Ball Handling,Agility}');
 INSERT INTO programs(slug, name, url, trainer_id, trainer_name, payment_type, image, tags) VALUES('pjf-performance-the-vert-code', 'The Vert Code', 'https://www.pjfperformance.com/the-vert-code/', 1, 'Paul J. Fabritz', 'LifetimeAccess', NULL, '{Vertical}');
+INSERT INTO programs(slug, name, url, trainer_id, trainer_name, payment_type, image, tags) VALUES('tyler-relph-basketball-academy', 'Tyler Relph Basketball Academy', 'https://www.trbasketballacademy.com/', 2, 'Tyler Relph', 'Subscription', NULL, '{Shooting, Ball Handling}');
 
 -- REVIEWS
 

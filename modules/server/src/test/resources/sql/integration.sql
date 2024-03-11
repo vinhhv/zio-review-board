@@ -1,3 +1,16 @@
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  hashed_password TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS recovery_tokens (
+  email TEXT PRIMARY KEY,
+  token TEXT NOT NULL,
+  expiration BIGINT NOT NULL
+);
+
 -- TRAINERS
 
 CREATE TABLE IF NOT EXISTS trainers (
@@ -8,7 +21,7 @@ CREATE TABLE IF NOT EXISTS trainers (
   image TEXT
 );
 
--- PROGRAMS
+:- PROGRAMS
 
 CREATE TYPE payment_type AS ENUM('LifetimeAccess', 'Subscription', 'SubscriptionOrLifetimeAccess');
 
@@ -17,7 +30,7 @@ CREATE TABLE IF NOT EXISTS programs (
   slug TEXT UNIQUE NOT NULL,
   name TEXT UNIQUE NOT NULL,
   url TEXT UNIQUE NOT NULL,
-  trainer_id BIGSERIAL NOT NULL REFERENCES trainers(id),
+  trainer_id BIGSERIAL NOT NULL,
   trainer_name TEXT NOT NULL,
   payment_type payment_type NOT NULL,
   image TEXT,
@@ -30,7 +43,8 @@ CREATE TYPE metric_score AS ENUM('Poor', 'Fair', 'Good', 'Great', 'Amazing');
 
 CREATE TABLE IF NOT EXISTS reviews (
   id BIGSERIAL PRIMARY KEY,
-  program_id BIGSERIAL NOT NULL REFERENCES programs(id),
+  program_id BIGSERIAL NOT NULL,
+  program_slug TEXT NOT NULL,
   user_id BIGINT NOT NULL,
   value metric_score NOT NULL,
   quality metric_score NOT NULL,
@@ -56,16 +70,3 @@ CREATE TRIGGER update_updated_column_before_update
 BEFORE UPDATE ON reviews
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
-
--- USERS
-CREATE TABLE IF NOT EXISTS users (
-  id BIGSERIAL PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  hashed_password TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS recovery_tokens (
-  email TEXT PRIMARY KEY,
-  token TEXT NOT NULL,
-  expiration BIGINT NOT NULL
-);
