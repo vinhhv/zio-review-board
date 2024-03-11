@@ -10,8 +10,6 @@ import org.scalajs.dom.*
 import org.scalajs.dom.html.Element
 import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import zio.*
-import org.scalajs.dom.HTMLImageElement
-import org.scalajs.dom.HTMLCanvasElement
 
 final case class CreateProgramState(
     name: String = "",
@@ -40,7 +38,6 @@ final case class CreateProgramState(
       name,
       url,
       trainerId.toLong,
-      "",
       PaymentType.fromOrdinal(paymentType.toInt),
       image,
       Option(tags).filter(_.nonEmpty)
@@ -149,7 +146,9 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
       img(
         src <-- stateVar.signal.map(_.image.getOrElse(""))
       ),
+      // TODO: Select from drawdown after pulling options from database
       renderInput("Program Trainer", "trainer", "number", true, "1", (s, v) => s.copy(trainerId = v)),
+      // TODO: Select from drawdown from hard-coded values
       renderInput("Payment Type", "payment_type", "number", true, "0", (s, v) => s.copy(paymentType = v)),
       renderInput(
         "Tags - separate by ','",

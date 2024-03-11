@@ -6,6 +6,7 @@ import com.misterjvm.reviewboard.repositories.ProgramRepository
 import zio.*
 
 import scala.collection.mutable
+import com.misterjvm.reviewboard.repositories.TrainerRepository
 
 // BUSINESS LOGIC
 // in between the HTTP layer and the DB layer
@@ -18,9 +19,14 @@ trait ProgramService {
   def search(filter: ProgramFilter): Task[List[Program]]
 }
 
-class ProgramServiceLive private (repo: ProgramRepository) extends ProgramService {
+class ProgramServiceLive private (repo: ProgramRepository, trainerRepo: TrainerRepository) extends ProgramService {
   override def create(request: CreateProgramRequest): Task[Program] =
-    repo.create(request.toProgram(-1L))
+    for {
+      trainer <- trainerRepo
+        .getById(request.trainerId)
+        .someOrFail(new RuntimeException(s"Could not find trainer ${request.trainerId}"))
+      program <- repo.create(request.toProgram(-1L, trainer.name))
+    } yield program
 
   override def getAll: Task[List[Program]] =
     repo.get
@@ -41,7 +47,8 @@ class ProgramServiceLive private (repo: ProgramRepository) extends ProgramServic
 object ProgramServiceLive {
   val layer = ZLayer {
     for {
-      repo <- ZIO.service[ProgramRepository]
-    } yield new ProgramServiceLive(repo)
+      repo        <- ZIO.service[ProgramRepository]
+      trainerRepo <- ZIO.service[TrainerRepository]
+    } yield new ProgramServiceLive(repo, trainerRepo)
   }
 }
