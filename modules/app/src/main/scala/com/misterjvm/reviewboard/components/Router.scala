@@ -37,6 +37,9 @@ object Router {
           path("post") {
             CreateProgramPage()
           },
+          path("program" / segment) { programSlug =>
+            ProgramPage(programSlug)
+          },
           noneMatched {
             NotFoundPage()
           }
