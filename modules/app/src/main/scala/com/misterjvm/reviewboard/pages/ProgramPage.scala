@@ -97,12 +97,12 @@ object ProgramPage {
       children <-- status.map {
         case Status.LOADING     => List(div("Loading..."))
         case Status.NOT_FOUND   => List(div("Program not found."))
-        case Status.OK(program) => render(program)
+        case Status.OK(program) => render(program, reviewsSignal(slug))
       },
       child <-- reviewsSignal(slug).map(_.toString)
     )
 
-  def render(program: Program) = List(
+  def render(program: Program, reviewsSignal: Signal[List[Review]]) = List(
     div(
       cls := "row jvm-programs-details-top-card",
       div(
@@ -132,6 +132,7 @@ object ProgramPage {
     div(
       cls := "container-fluid",
       renderProgramSummary, // TODO: fill summary later
+      children <-- reviewsSignal.map(_.map(renderReview)),
       div(
         cls := "container",
         div(
@@ -173,7 +174,7 @@ object ProgramPage {
       )
     )
 
-  def renderStaticReview(review: Review) =
+  def renderReview(review: Review) =
     div(
       cls := "container",
       div(
@@ -183,13 +184,13 @@ object ProgramPage {
           cls := "program-description",
           div(
             cls := "review-summary",
-            renderStaticReviewDetail("Value", review.value),
-            renderStaticReviewDetail("Quality", review.quality),
-            renderStaticReviewDetail("Content", review.content),
-            renderStaticReviewDetail("User Experience", review.userExperience),
-            renderStaticReviewDetail("Accessibility", review.accessibility),
-            renderStaticReviewDetail("Support", review.support),
-            renderStaticReviewDetail("Would Recommend", review.wouldRecommend)
+            renderReviewDetail("Value", review.value),
+            renderReviewDetail("Quality", review.quality),
+            renderReviewDetail("Content", review.content),
+            renderReviewDetail("User Experience", review.userExperience),
+            renderReviewDetail("Accessibility", review.accessibility),
+            renderReviewDetail("Support", review.support),
+            renderReviewDetail("Would Recommend", review.wouldRecommend)
           ),
           // TODO parse this Markdown
           div(
@@ -201,7 +202,7 @@ object ProgramPage {
       )
     )
 
-  def renderStaticReviewDetail(detail: String, metricScore: MetricScore) =
+  def renderReviewDetail(detail: String, metricScore: MetricScore) =
     div(
       cls := "review-detail",
       span(cls := "review-detail-name", s"$detail: "),
