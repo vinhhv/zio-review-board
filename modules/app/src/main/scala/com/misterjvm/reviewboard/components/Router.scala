@@ -34,6 +34,9 @@ object Router {
           path("logout") {
             LogoutPage()
           },
+          path("post") {
+            CreateProgramPage()
+          },
           noneMatched {
             NotFoundPage()
           }
