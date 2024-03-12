@@ -4,12 +4,10 @@ import com.auth0.jwt.JWTVerifier.BaseVerification
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.{JWT, JWTVerifier}
 import com.misterjvm.reviewboard.config.*
+import com.misterjvm.reviewboard.domain.data.{User, UserID, UserToken}
 import zio.*
 
 import java.time.Instant
-import zio.config.typesafe.TypesafeConfig
-import com.typesafe.config.ConfigFactory
-import com.misterjvm.reviewboard.domain.data.{User, UserToken, UserID}
 
 trait JWTService {
   def createToken(user: User): Task[UserToken]
@@ -43,7 +41,7 @@ class JWTServiceLive(jwtConfig: JWTConfig, clock: java.time.Clock) extends JWTSe
           .withClaim(CLAIM_USERNAME, user.email)
           .sign(algorithm)
       )
-    } yield UserToken(user.email, token, expiration.getEpochSecond())
+    } yield UserToken(user.id, user.email, token, expiration.getEpochSecond())
 
   override def verifyToken(token: String): Task[UserID] =
     for {

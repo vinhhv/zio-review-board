@@ -1,8 +1,8 @@
 package com.misterjvm.reviewboard.services
 
-import com.misterjvm.reviewboard.domain.data.{PaymentType, Program, ProgramFilter}
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program, ProgramFilter, Trainer}
 import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
-import com.misterjvm.reviewboard.repositories.ProgramRepository
+import com.misterjvm.reviewboard.repositories.{ProgramRepository, TrainerRepository, TrainerRepositoryLive}
 import com.misterjvm.reviewboard.syntax.*
 import zio.*
 import zio.test.*
@@ -54,11 +54,18 @@ object ProgramServiceSpec extends ZIOSpecDefault {
     }
   )
 
+  val stubTrainerRepoLayer = ZLayer.succeed {
+    new TrainerRepository {
+      override def getById(id: Long): Task[Option[Trainer]] =
+        ZIO.succeed(Some(Trainer(1L, "trainer", "description", "https://trainer.com", None)))
+    }
+  }
+
   override def spec: Spec[TestEnvironment & Scope, Any] =
     suite("ProgramServiceSpec")(
       test("create") {
         val programZIO =
-          service(_.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess)))
+          service(_.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess)))
         programZIO.assert { program =>
           program.name == "PJF Performance" &&
           program.url == "pjf.com" &&
@@ -68,7 +75,7 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("getById") {
         val programZIO = for {
           program <- service(
-            _.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess))
           )
           programOpt <- service(_.getById(program.id))
         } yield (program, programOpt)
@@ -85,7 +92,7 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("getBySlug") {
         val programZIO = for {
           program <- service(
-            _.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess))
           )
           programOpt <- service(_.getBySlug(program.slug))
         } yield (program, programOpt)
@@ -102,10 +109,10 @@ object ProgramServiceSpec extends ZIOSpecDefault {
       test("get") {
         val programZIO = for {
           program <- service(
-            _.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess))
+            _.create(CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess))
           )
           program2 <- service(
-            _.create(CreateProgramRequest("PJF Performance2", "pjf2.com", 2, "PJF", PaymentType.Subscription))
+            _.create(CreateProgramRequest("PJF Performance2", "pjf2.com", 2, PaymentType.Subscription))
           )
           programs <- service(_.getAll)
         } yield (program, program2, programs)
@@ -114,5 +121,5 @@ object ProgramServiceSpec extends ZIOSpecDefault {
           programs.toSet == Set(program, program2)
         }
       }
-    ).provide(ProgramServiceLive.layer, stubRepoLayer)
+    ).provide(ProgramServiceLive.layer, stubRepoLayer, stubTrainerRepoLayer)
 }

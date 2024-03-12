@@ -1,17 +1,15 @@
 package com.misterjvm.reviewboard.services
 
-import com.misterjvm.reviewboard.domain.data.DataFixtures
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, Review}
+import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import com.misterjvm.reviewboard.repositories.ReviewRepository
 import zio.*
 import zio.test.*
-import com.misterjvm.reviewboard.domain.data.Review
-import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 
 object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
 
   val stubRepoLayer = ZLayer.succeed {
     new ReviewRepository {
-
       override def create(review: Review): Task[Review] =
         ZIO.succeed(goodReview)
 
@@ -40,6 +38,11 @@ object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
       override def delete(id: Long): Task[Review] =
         getById(id).someOrFail(new RuntimeException(s"Delete failed: ID $id not found"))
 
+      override def getByProgramSlug(programSlug: String): Task[List[Review]] =
+        ZIO.succeed {
+          if (programSlug == goodReview.programSlug) List(goodReview)
+          else List()
+        }
     }
   }
 
@@ -51,6 +54,7 @@ object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
           review <- service.create(
             CreateReviewRequest(
               programId = goodReview.programId,
+              programSlug = goodReview.programSlug,
               value = goodReview.value,
               quality = goodReview.quality,
               content = goodReview.content,

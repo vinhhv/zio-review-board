@@ -1,8 +1,18 @@
 package com.misterjvm.reviewboard.integration
 
 import com.misterjvm.reviewboard.config.{JWTConfig, RecoveryTokensConfig}
+import com.misterjvm.reviewboard.domain.data.UserToken
 import com.misterjvm.reviewboard.http.controllers.*
 import com.misterjvm.reviewboard.http.endpoints.EndpointConstants
+import com.misterjvm.reviewboard.http.requests.{
+  DeleteAccountRequest,
+  ForgotPasswordRequest,
+  LoginRequest,
+  RecoverPasswordRequest,
+  RegisterUserAccount,
+  UpdatePasswordRequest
+}
+import com.misterjvm.reviewboard.http.responses.UserResponse
 import com.misterjvm.reviewboard.repositories.{
   RecoveryTokensRepositoryLive,
   Repository,
@@ -21,16 +31,6 @@ import sttp.tapir.ztapir.RIOMonadError
 import zio.*
 import zio.json.*
 import zio.test.*
-import com.misterjvm.reviewboard.domain.data.UserToken
-import com.misterjvm.reviewboard.http.requests.{
-  DeleteAccountRequest,
-  ForgotPasswordRequest,
-  LoginRequest,
-  RecoverPasswordRequest,
-  RegisterUserAccount,
-  UpdatePasswordRequest
-}
-import com.misterjvm.reviewboard.http.responses.UserResponse
 
 object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointConstants {
 
@@ -128,9 +128,9 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
           backendStub   <- backendStubZIO
           maybeResponse <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
           userToken <- backendStub
-            .post[UserToken]("/users/login", LoginRequest(EMAIL, PASSWORD))
+            .post[UserToken](s"$USERS/login", LoginRequest(EMAIL, PASSWORD))
             .someOrFail(new RuntimeException("Authentication failed"))
-          _ <- backendStub
+          response <- backendStub
             .putAuth[UserResponse](
               "/users/password",
               UpdatePasswordRequest(EMAIL, PASSWORD, NEW_PASSWORD),

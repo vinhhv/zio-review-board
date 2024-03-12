@@ -35,6 +35,7 @@ trait DataFixtures {
   val goodReview = Review(
     id = 1L,
     programId = 1L,
+    programSlug = "pjf-performance",
     userId = 1L,
     value = Amazing,
     quality = Amazing,
@@ -51,6 +52,7 @@ trait DataFixtures {
   val badReview = Review(
     id = 2L,
     programId = 1L,
+    programSlug = "pjf-performance",
     userId = 1L,
     value = Poor,
     quality = Poor,

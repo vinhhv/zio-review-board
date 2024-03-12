@@ -69,7 +69,7 @@ object UserServiceSpec extends ZIOSpecDefault {
   val stubJwtLayer = ZLayer.succeed {
     new JWTService {
       override def createToken(user: User): Task[UserToken] =
-        ZIO.succeed(UserToken(user.email, "BIG ACCESS", Long.MaxValue))
+        ZIO.succeed(UserToken(user.id, user.email, "BIG ACCESS", Long.MaxValue))
 
       override def verifyToken(token: String): Task[UserID] =
         ZIO.succeed(UserID(vinh.id, vinh.email))

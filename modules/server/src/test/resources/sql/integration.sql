@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS trainers (
   image TEXT
 );
 
-:- PROGRAMS
+-- PROGRAMS
 
 CREATE TYPE payment_type AS ENUM('LifetimeAccess', 'Subscription', 'SubscriptionOrLifetimeAccess');
 

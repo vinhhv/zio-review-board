@@ -119,14 +119,7 @@ object ProgramPage {
             ProgramComponents.renderOverview(program)
           )
         ),
-        div(
-          cls := "jvm-programs-details-card-apply-now-btn",
-          button(
-            `type` := "button",
-            cls    := "btn btn-warning",
-            "Add a review"
-          )
-        )
+        child <-- Session.userState.signal.map(maybeUser => maybeRenderUserAction(maybeUser, reviewsSignal))
       )
     ),
     div(
@@ -161,6 +154,26 @@ object ProgramPage {
       )
     )
   )
+
+  def maybeRenderUserAction(maybeUser: Option[UserToken], reviewsSignal: Signal[List[Review]]) =
+    maybeUser match {
+      case None =>
+        div(
+          cls := "jvm-programs-details-card-apply-now-btn",
+          "You must be logged in to post a review"
+        )
+      case Some(user) =>
+        div(
+          cls := "jvm-programs-details-card-apply-now-btn",
+          child <-- reviewsSignal
+            .map(_.find(_.userId == -1)) // TODO: surface out userId in user token
+            button (
+              `type` := "button",
+              cls    := "btn btn-warning",
+              "Add a review"
+            )
+        )
+    }
 
   def renderProgramSummary =
     div(

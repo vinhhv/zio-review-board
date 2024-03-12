@@ -1,7 +1,6 @@
 package com.misterjvm.reviewboard.http.controllers
 
-import com.misterjvm.reviewboard.domain.data.{DataFixtures, UserToken}
-import com.misterjvm.reviewboard.domain.data.{MetricScore, Review, User, UserID, UserToken}
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, MetricScore, Review, User, UserID, UserToken}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import com.misterjvm.reviewboard.services.{JWTService, ReviewService}
 import com.misterjvm.reviewboard.syntax.*
@@ -12,15 +11,16 @@ import sttp.tapir.generic.auto.*
 import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.stub.TapirStubInterpreter
 import sttp.tapir.ztapir.RIOMonadError
-import zio.*
 import zio.json.*
 import zio.test.*
+import zio.{Task, _}
 
 object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
 
   private given zioME: MonadError[Task] = new RIOMonadError[Any]
 
   private val serviceStub = new ReviewService {
+
     override def create(request: CreateReviewRequest, userId: Long): Task[Review] =
       ZIO.succeed(goodReview)
 
@@ -41,12 +41,18 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
         if (userId == 1) List(goodReview)
         else List()
       }
+
+    override def getByProgramSlug(programSlug: String): Task[List[Review]] =
+      ZIO.succeed {
+        if (programSlug == goodReview.programSlug) List(goodReview)
+        else List()
+      }
   }
 
   private val jwtServiceStub = new JWTService {
     val TOKEN = "TOKEN"
     override def createToken(user: User): Task[UserToken] =
-      ZIO.succeed(UserToken(user.email, TOKEN, 999999999L))
+      ZIO.succeed(UserToken(user.id, user.email, TOKEN, 999999999L))
 
     override def verifyToken(token: String): Task[UserID] =
       if (token == TOKEN)
@@ -77,6 +83,7 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
             .body(
               CreateReviewRequest(
                 programId = 1L,
+                programSlug = "slug",
                 value = Amazing,
                 quality = Amazing,
                 content = Amazing,

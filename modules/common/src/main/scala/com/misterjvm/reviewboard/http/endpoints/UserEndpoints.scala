@@ -27,7 +27,7 @@ trait UserEndpoints extends BaseEndpoint with EndpointConstants {
       .name("update password")
       .description("Update user password")
       .in(USERS_ENDPOINT / "password")
-      .post
+      .put
       .in(jsonBody[UpdatePasswordRequest])
       .out(jsonBody[UserResponse])
 

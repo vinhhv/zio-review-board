@@ -25,7 +25,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
 
   private val serviceStub = new ProgramService {
     override def create(request: CreateProgramRequest): Task[Program] =
-      ZIO.succeed(request.toProgram(1L))
+      ZIO.succeed(request.toProgram(1L, pjf.trainerName))
 
     override def getAll: Task[List[Program]] =
       ZIO.succeed(List(pjf))
@@ -52,7 +52,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
   private val jwtServiceStub = new JWTService {
     val TOKEN = "TOKEN"
     override def createToken(user: User): Task[UserToken] =
-      ZIO.succeed(UserToken(user.email, TOKEN, 999999999L))
+      ZIO.succeed(UserToken(user.id, user.email, TOKEN, 999999999L))
 
     override def verifyToken(token: String): Task[UserID] =
       if (token == TOKEN)
@@ -81,7 +81,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           response <- basicRequest
             .post(uri"/programs")
             .body(
-              CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess).toJson
+              CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess).toJson
             )
             .header("Authorization", "Bearer TOKEN")
             .send(backendStub)
@@ -101,7 +101,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
           response <- basicRequest
             .post(uri"/programs")
             .body(
-              CreateProgramRequest("PJF Performance", "pjf.com", 1, "PJF", PaymentType.LifetimeAccess).toJson
+              CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess).toJson
             )
             .header("Authorization", "Bearer BAD_TOKEN")
             .send(backendStub)
