@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.http.requests
 
-import com.misterjvm.reviewboard.domain.data.MetricScore
+import com.misterjvm.reviewboard.domain.data.{MetricScore, Review}
 import zio.json.{DeriveJsonCodec, JsonCodec}
 
 final case class CreateReviewRequest(
@@ -18,4 +18,17 @@ final case class CreateReviewRequest(
 
 object CreateReviewRequest {
   given codec: JsonCodec[CreateReviewRequest] = DeriveJsonCodec.gen[CreateReviewRequest]
+
+  def fromReview(review: Review) = CreateReviewRequest(
+    programId = review.programId,
+    programSlug = review.programSlug,
+    value = review.value,
+    quality = review.quality,
+    content = review.content,
+    userExperience = review.userExperience,
+    accessibility = review.accessibility,
+    support = review.support,
+    wouldRecommend = review.wouldRecommend,
+    review = review.review
+  )
 }

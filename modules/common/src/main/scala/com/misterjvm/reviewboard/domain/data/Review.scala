@@ -23,4 +23,21 @@ final case class Review(
 
 object Review {
   given codec: JsonCodec[Review] = DeriveJsonCodec.gen[Review]
+
+  def empty(programId: Long, programSlug: String) = Review(
+    -1L,
+    programId,
+    programSlug,
+    -1L,
+    MetricScore.Amazing,
+    MetricScore.Amazing,
+    MetricScore.Amazing,
+    MetricScore.Amazing,
+    MetricScore.Amazing,
+    MetricScore.Amazing,
+    MetricScore.Amazing,
+    "",
+    Instant.now(),
+    Instant.now()
+  )
 }

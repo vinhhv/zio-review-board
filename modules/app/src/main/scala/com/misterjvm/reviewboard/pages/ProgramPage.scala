@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.pages
 
-import com.misterjvm.reviewboard.components.ProgramComponents
+import com.misterjvm.reviewboard.components.{AddReviewCard, ProgramComponents}
 import com.misterjvm.reviewboard.core.Session
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.domain.data.*
@@ -8,7 +8,6 @@ import com.raquo.laminar.api.L.{*, given}
 import zio.*
 
 import java.time.Instant
-import com.misterjvm.reviewboard.components.AddReviewCard
 
 object ProgramPage {
 
@@ -22,14 +21,19 @@ object ProgramPage {
 
   val addReviewCardActive = Var[Boolean](false)
   val fetchProgramBus     = EventBus[Option[Program]]()
+  val triggerRefreshBus   = EventBus[Unit]()
+
+  def refreshReviewList(programSlug: String) =
+    useBackend(_.review.getByProgramSlugEndpoint(programSlug)).toEventStream
+      .mergeWith(
+        triggerRefreshBus.events
+          .flatMap(_ => useBackend(_.review.getByProgramSlugEndpoint(programSlug)).toEventStream)
+      )
 
   def reviewsSignal(programSlug: String): Signal[List[Review]] = fetchProgramBus.events
     .flatMap {
-      case None => EventStream.empty
-      case Some(program) =>
-        val reviewsBus = EventBus[List[Review]]()
-        useBackend(_.review.getByProgramSlugEndpoint(programSlug)).emitTo(reviewsBus)
-        reviewsBus.events
+      case None          => EventStream.empty
+      case Some(program) => refreshReviewList(programSlug)
     }
     .scanLeft(List[Review]())((_, list) => list)
 
@@ -50,8 +54,7 @@ object ProgramPage {
         case Status.LOADING     => List(div("Loading..."))
         case Status.NOT_FOUND   => List(div("Program not found."))
         case Status.OK(program) => render(program, reviewsSignal(slug))
-      },
-      child <-- reviewsSignal(slug).map(_.toString)
+      }
     )
 
   def render(program: Program, reviewsSignal: Signal[List[Review]]) = List(
@@ -82,7 +85,9 @@ object ProgramPage {
           Option.when(active)(
             AddReviewCard(
               program.id,
-              onCancel = () => addReviewCardActive.set(false)
+              program.slug,
+              onDisable = () => addReviewCardActive.set(false),
+              triggerRefreshBus
             )()
           )
         )
