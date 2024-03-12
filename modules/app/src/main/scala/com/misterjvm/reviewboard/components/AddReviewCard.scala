@@ -2,7 +2,7 @@ package com.misterjvm.reviewboard.components
 
 import com.raquo.laminar.api.L.{*, given}
 
-class AddReviewCard(programString: String) {
+class AddReviewCard(programId: Long, onCancel: () => Unit) {
   def apply() =
     div(
       cls := "container",
@@ -43,6 +43,12 @@ class AddReviewCard(programString: String) {
               cls    := "btn btn-warning rock-action-btn",
               "Post review"
               // TODO post the review on this button
+            ),
+            a(
+              cls  := "add-review-cancel",
+              href := "#",
+              "Cancel",
+              onClick --> (_ => onCancel())
             )
             // TODO show potential errors here
           )

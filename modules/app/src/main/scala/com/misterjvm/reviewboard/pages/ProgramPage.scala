@@ -1,66 +1,16 @@
 package com.misterjvm.reviewboard.pages
 
 import com.misterjvm.reviewboard.components.ProgramComponents
+import com.misterjvm.reviewboard.core.Session
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.domain.data.*
 import com.raquo.laminar.api.L.{*, given}
 import zio.*
 
 import java.time.Instant
+import com.misterjvm.reviewboard.components.AddReviewCard
 
 object ProgramPage {
-
-  // dummy data
-  val dummyReviews = List(
-    Review(
-      1L,
-      1L,
-      "pjf-performance-unranked-academy",
-      1L,
-      MetricScore.Amazing,
-      MetricScore.Amazing,
-      MetricScore.Amazing,
-      MetricScore.Amazing,
-      MetricScore.Amazing,
-      MetricScore.Amazing,
-      MetricScore.Amazing,
-      "Amazing program",
-      Instant.now(),
-      Instant.now()
-    ),
-    Review(
-      1L,
-      1L,
-      "pjf-performance-unranked-academy",
-      1L,
-      MetricScore.Fair,
-      MetricScore.Fair,
-      MetricScore.Fair,
-      MetricScore.Fair,
-      MetricScore.Fair,
-      MetricScore.Fair,
-      MetricScore.Fair,
-      "Iz Okay",
-      Instant.now(),
-      Instant.now()
-    ),
-    Review(
-      1L,
-      1L,
-      "pjf-performance-unranked-academy",
-      1L,
-      MetricScore.Great,
-      MetricScore.Great,
-      MetricScore.Great,
-      MetricScore.Great,
-      MetricScore.Great,
-      MetricScore.Great,
-      MetricScore.Great,
-      "Pretty good, but missing some features",
-      Instant.now(),
-      Instant.now()
-    )
-  )
 
   enum Status {
     case LOADING
@@ -70,7 +20,9 @@ object ProgramPage {
 
   // reactive variables
 
-  val fetchProgramBus = EventBus[Option[Program]]()
+  val addReviewCardActive = Var[Boolean](false)
+  val fetchProgramBus     = EventBus[Option[Program]]()
+
   def reviewsSignal(programSlug: String): Signal[List[Review]] = fetchProgramBus.events
     .flatMap {
       case None => EventStream.empty
@@ -125,6 +77,16 @@ object ProgramPage {
     div(
       cls := "container-fluid",
       renderProgramSummary, // TODO: fill summary later
+      children <-- addReviewCardActive.signal
+        .map(active =>
+          Option.when(active)(
+            AddReviewCard(
+              program.id,
+              onCancel = () => addReviewCardActive.set(false)
+            )()
+          )
+        )
+        .map(_.toList),
       children <-- reviewsSignal.map(_.map(renderReview)),
       div(
         cls := "container",
@@ -166,12 +128,19 @@ object ProgramPage {
         div(
           cls := "jvm-programs-details-card-apply-now-btn",
           child <-- reviewsSignal
-            .map(_.find(_.userId == -1)) // TODO: surface out userId in user token
-            button (
-              `type` := "button",
-              cls    := "btn btn-warning",
-              "Add a review"
-            )
+            .map(_.find(_.userId == user.id))
+            .map {
+              case None =>
+                button(
+                  `type` := "button",
+                  cls    := "btn btn-warning",
+                  "Add a review",
+                  disabled <-- addReviewCardActive.signal,
+                  onClick.mapTo(true) --> addReviewCardActive.writer
+                )
+              case Some(_) =>
+                div("You already posted a review")
+            }
         )
     }
 
