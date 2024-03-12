@@ -98,13 +98,10 @@ class AddReviewCard(programId: Long, programSlug: String, onDisable: () => Unit,
       select(
         idAttr := selectorId,
         (1 to 5).reverse.map { v =>
-          option(
-            v.toString,
-            onInput.mapToValue --> stateVar.updater { (s: State, value: String) =>
-              s.copy(review = updateFn(s.review, value.toInt))
-            }
-          )
-          // TODO set state here
+          option(v.toString)
+        },
+        onInput.mapToValue --> stateVar.updater { (s: State, value: String) =>
+          s.copy(review = updateFn(s.review, value.toInt))
         }
       )
     )

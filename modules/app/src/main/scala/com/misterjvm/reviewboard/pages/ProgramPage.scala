@@ -1,10 +1,12 @@
 package com.misterjvm.reviewboard.pages
 
-import com.misterjvm.reviewboard.components.{AddReviewCard, ProgramComponents}
+import com.misterjvm.reviewboard.components.{AddReviewCard, Markdown, ProgramComponents, Time}
 import com.misterjvm.reviewboard.core.Session
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.domain.data.*
+import com.raquo.laminar.DomApi
 import com.raquo.laminar.api.L.{*, given}
+import org.scalajs.dom
 import zio.*
 
 import java.time.Instant
@@ -166,7 +168,10 @@ object ProgramPage {
       cls := "container",
       div(
         cls := "markdown-body overview-section",
-        // TODO add a highlight if this is "your" review
+        // add a css class to "your review"
+        cls.toggle("review-highlighted") <-- Session.userState.signal.map(maybeUser =>
+          maybeUser.map(_.id) == Option(review).map(_.userId)
+        ),
         div(
           cls := "program-description",
           div(
@@ -179,14 +184,27 @@ object ProgramPage {
             renderReviewDetail("Support", review.support),
             renderReviewDetail("Would Recommend", review.wouldRecommend)
           ),
-          // TODO parse this Markdown
-          div(
-            cls := "review-content",
-            review.review
-          ),
-          div(cls := "review-posted", "Posted (TODO) a million years ago")
+          injectMarkdown(review),
+          div(cls := "review-posted", s"Posted ${Time.unix2hr(review.created.toEpochMilli())}"),
+          child.maybe <-- Session.userState.signal
+            .map(
+              _.filter(_.id == review.userId)
+            )
+            .map(_.map(_ => div(cls := "review-posted", "Your review")))
         )
       )
+    )
+
+  def injectMarkdown(review: Review) =
+    div(
+      cls := "review-content",
+      DomApi
+        .unsafeParseHtmlStringIntoNodeArray(Markdown.toHtml(review.review))
+        .map {
+          case t: dom.Text         => span(t.data)
+          case e: dom.html.Element => foreignHtmlElement(e)
+          case _                   => emptyNode
+        }
     )
 
   def renderReviewDetail(detail: String, metricScore: MetricScore) =
