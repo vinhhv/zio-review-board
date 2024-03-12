@@ -48,13 +48,13 @@ class AddReviewCard(programId: Long, programSlug: String, onDisable: () => Unit,
             // score dropdowns
             div(
               cls := "add-review-scores",
-              renderDropdown("Value", (r, v) => r.copy(value = MetricScore.fromOrdinal(v))),
-              renderDropdown("Quality", (r, v) => r.copy(quality = MetricScore.fromOrdinal(v))),
-              renderDropdown("Content", (r, v) => r.copy(content = MetricScore.fromOrdinal(v))),
-              renderDropdown("User Experience", (r, v) => r.copy(userExperience = MetricScore.fromOrdinal(v))),
-              renderDropdown("Accessibility", (r, v) => r.copy(accessibility = MetricScore.fromOrdinal(v))),
-              renderDropdown("Support", (r, v) => r.copy(support = MetricScore.fromOrdinal(v))),
-              renderDropdown("Would Recommend", (r, v) => r.copy(wouldRecommend = MetricScore.fromOrdinal(v)))
+              renderDropdown("Value", (r, v) => r.copy(value = MetricScore.fromInput(v))),
+              renderDropdown("Quality", (r, v) => r.copy(quality = MetricScore.fromInput(v))),
+              renderDropdown("Content", (r, v) => r.copy(content = MetricScore.fromInput(v))),
+              renderDropdown("User Experience", (r, v) => r.copy(userExperience = MetricScore.fromInput(v))),
+              renderDropdown("Accessibility", (r, v) => r.copy(accessibility = MetricScore.fromInput(v))),
+              renderDropdown("Support", (r, v) => r.copy(support = MetricScore.fromInput(v))),
+              renderDropdown("Would Recommend", (r, v) => r.copy(wouldRecommend = MetricScore.fromInput(v)))
             ),
             // text area for the text review
             div(

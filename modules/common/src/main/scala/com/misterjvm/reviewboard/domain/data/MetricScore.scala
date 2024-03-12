@@ -26,4 +26,9 @@ object MetricScore {
     case 4 => Great
     case 5 => Amazing
   }
+
+  def fromInput(value: Int): MetricScore =
+    if (value < 1) MetricScore.Poor
+    else if (value > 5) MetricScore.Amazing
+    else MetricScore.fromOrdinal(value - 1)
 }
