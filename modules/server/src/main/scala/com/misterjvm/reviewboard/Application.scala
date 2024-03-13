@@ -33,12 +33,14 @@ object Application extends ZIOAppDefault {
       UserServiceLive.layer,
       JWTServiceLive.configuredLayer,
       EmailServiceLive.configuredLayer,
+      InviteServiceLive.layer,
       // repos
       ProgramRepositoryLive.layer,
       ReviewRepositoryLive.layer,
       TrainerRepositoryLive.layer,
       UserRepositoryLive.layer,
       RecoveryTokensRepositoryLive.configuredLayer,
+      InviteRepositoryLive.layer,
       // other requirements
       Repository.dataLayer
     )

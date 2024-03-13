@@ -84,3 +84,13 @@ CREATE TRIGGER update_updated_column_before_update
 BEFORE UPDATE ON reviews
 FOR EACH ROW
 EXECUTE FUNCTION update_modified_column();
+
+CREATE TABLE IF NOT EXISTS invites (
+  id BIGSERIAL PRIMARY KEY,
+  username TEXT NOT NULL,
+  program_id BIGINT NOT NULL REFERENCES programs(id),
+  n_invites INT NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT false
+);
+
+INSERT INTO invites(username, program_id, n_invites, active) VALUES ('vinh@misterjvm.com', 1, 10, true);
