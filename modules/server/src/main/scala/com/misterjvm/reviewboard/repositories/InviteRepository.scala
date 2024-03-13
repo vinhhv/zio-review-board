@@ -10,6 +10,7 @@ trait InviteRepository {
   def getInvitePack(username: String, programId: Long): Task[Option[InviteRecord]]
   def addInvitePack(username: String, programId: Long, nInvites: Int): Task[Long]
   def activatePack(id: Long): Task[Boolean]
+  def markInvitesUsed(username: String, programId: Long, nInvites: Int): Task[Int]
 }
 
 class InviteRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends InviteRepository with ProgramMeta(quill) {
@@ -77,6 +78,18 @@ class InviteRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends In
   // trigger addInvitePack (active false)
   // payment process
   // activate the pack that was just paid
+  override def markInvitesUsed(username: String, programId: Long, nInvites: Int): Task[Int] =
+    for {
+      currentRecord <- getInvitePack(username, programId)
+        .someOrFail(new RuntimeException(s"User $username cannot send invites for program id $programId"))
+      nInvitesMarked <- ZIO.succeed(Math.min(nInvites, currentRecord.nInvites))
+      _ <- run(
+        query[InviteRecord]
+          .filter(_.id == lift(currentRecord.id))
+          .updateValue(lift(currentRecord.copy(nInvites = currentRecord.nInvites - nInvitesMarked)))
+          .returning(r => r)
+      )
+    } yield nInvitesMarked
 }
 
 object InviteRepositoryLive {

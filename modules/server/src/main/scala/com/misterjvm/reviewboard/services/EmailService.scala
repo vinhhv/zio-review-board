@@ -1,6 +1,7 @@
 package com.misterjvm.reviewboard.services
 
 import com.misterjvm.reviewboard.config.{Configs, EmailServiceConfig}
+import com.misterjvm.reviewboard.domain.data.Program
 import zio.*
 
 import java.util.Properties
@@ -29,6 +30,31 @@ trait EmailService {
 
     sendEmail(to, subject, content)
   }
+
+  def sendReviewInvite(from: String, to: String, program: Program): Task[Unit] =
+    val subject = s"Nothing But Net: Invitation to review ${program.name}"
+    val content =
+      s"""
+        <div style="
+          border: 1px solid black;
+          padding: 20px;
+          font-family: sans-serif;
+          line-height: 2;
+          font-size: 20px;
+        ">
+        <div>
+          <h1>You're invited to review ${program.name}</h1>
+          <p>
+            Go to
+            <a href="http://localhost:1234/programs/${program.slug}">this link</a>
+            to add your thoughts on the app.
+            <br/>
+            Should just take a minute.
+          </p>
+        </div>
+      """
+    sendEmail(to, subject, content)
+
 }
 
 class EmailServiceLive private (config: EmailServiceConfig) extends EmailService {
