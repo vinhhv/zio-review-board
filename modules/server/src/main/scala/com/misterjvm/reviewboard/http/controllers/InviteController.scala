@@ -4,12 +4,12 @@ import com.misterjvm.reviewboard.domain.data.*
 import com.misterjvm.reviewboard.http.endpoints.InviteEndpoints
 import com.misterjvm.reviewboard.http.requests.InvitePackRequest
 import com.misterjvm.reviewboard.http.responses.InviteResponse
-import com.misterjvm.reviewboard.services.{InviteService, JWTService}
+import com.misterjvm.reviewboard.services.{InviteService, JWTService, PaymentService}
 import sttp.tapir.Endpoint
 import sttp.tapir.server.ServerEndpoint
 import zio.*
 
-class InviteController private (inviteService: InviteService, jwtService: JWTService)
+class InviteController private (inviteService: InviteService, jwtService: JWTService, paymentService: PaymentService)
     extends BaseController
     with InviteEndpoints {
 
@@ -45,12 +45,27 @@ class InviteController private (inviteService: InviteService, jwtService: JWTSer
         inviteService.getByUsername(token.email).either
       }
 
-  override val routes: List[ServerEndpoint[Any, Task]] = List(addPack, invite, getByUserId)
+  val addPackPromoted =
+    addPackPromotedEndpoint
+      .serverSecurityLogic[UserID, Task](token => jwtService.verifyToken(token).either)
+      .serverLogic { token => request =>
+        inviteService
+          .addInvitePack(token.email, request.programId)
+          .flatMap { packId =>
+            paymentService.createCheckoutSession(packId, token.email)
+          } // Option[Session]
+          .someOrFail(new RuntimeException("Cannot create payment checkout session"))
+          .map(_.getUrl()) // the checkout session URL = the desired payload
+          .either
+      }
+
+  override val routes: List[ServerEndpoint[Any, Task]] = List(addPack, addPackPromoted, getByUserId, invite)
 }
 
 object InviteController {
   val makeZIO = for {
-    inviteService <- ZIO.service[InviteService]
-    jwtService    <- ZIO.service[JWTService]
-  } yield new InviteController(inviteService, jwtService)
+    inviteService  <- ZIO.service[InviteService]
+    jwtService     <- ZIO.service[JWTService]
+    paymentService <- ZIO.service[PaymentService]
+  } yield new InviteController(inviteService, jwtService, paymentService)
 }

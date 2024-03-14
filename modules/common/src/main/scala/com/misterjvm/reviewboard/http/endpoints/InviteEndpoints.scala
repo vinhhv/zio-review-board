@@ -35,7 +35,7 @@ trait InviteEndpoints extends BaseEndpoint {
     secureBaseEndpoint
       .tag("invites")
       .name("invite")
-      .description("Send poeple emails inviting them to leave a review")
+      .description("Send people emails inviting them to leave a review")
       .in("invite")
       .post
       .in(jsonBody[InviteRequest])
@@ -54,5 +54,21 @@ trait InviteEndpoints extends BaseEndpoint {
       .in("invite" / "all")
       .out(jsonBody[List[InviteNamedRecord]])
 
-  // TODO: paid endpoints
+  val addPackPromotedEndpoint =
+    secureBaseEndpoint
+      .tag("Invites")
+      .name("add invites (promoted)")
+      .description("Get invite tokens (paid via Stripe)")
+      .in("invite" / "promoted")
+      .post
+      .in(jsonBody[InvitePackRequest])
+      .out(stringBody) // this is the Stripe checkout URL
+
+  // webhook - will be called automatically
+
+  /**
+    * hit /invite/promoted -> Stripe checkout URL, add a new (inactive) email pack
+    * go to the URL, fill in the details, hit Pay
+    * after a while, Stripe will call the webhook -> activate the pack
+    */
 }
