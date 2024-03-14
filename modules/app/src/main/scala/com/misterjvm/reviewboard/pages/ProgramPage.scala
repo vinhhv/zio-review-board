@@ -1,9 +1,10 @@
 package com.misterjvm.reviewboard.pages
 
-import com.misterjvm.reviewboard.components.{AddReviewCard, Markdown, ProgramComponents, Time}
+import com.misterjvm.reviewboard.components.{AddReviewCard, Markdown, ProgramComponents, Router, Time}
 import com.misterjvm.reviewboard.core.Session
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.domain.data.*
+import com.misterjvm.reviewboard.http.requests.InvitePackRequest
 import com.raquo.laminar.DomApi
 import com.raquo.laminar.api.L.{*, given}
 import org.scalajs.dom
@@ -45,6 +46,13 @@ object ProgramPage {
       case Some(program) => Status.OK(program)
     }
   }
+
+  val inviteErrorBus = EventBus[String]()
+
+  def startPaymentFlow(programId: Long) =
+    useBackend(_.invite.addPackPromotedEndpoint(InvitePackRequest(programId)))
+      .tapError(e => ZIO.succeed(inviteErrorBus.emit(e.getMessage())))
+      .emitTo(Router.externalUrlBus)
 
   // renderer
 
@@ -95,34 +103,41 @@ object ProgramPage {
         )
         .map(_.toList),
       children <-- reviewsSignal.map(_.map(renderReview)),
+      child.maybe <-- Session.userState.signal.map(_.map(_ => renderInviteAction(program)))
+    )
+  )
+
+  def renderInviteAction(program: Program) =
+    div(
+      cls := "container",
       div(
-        cls := "container",
+        cls := "rok-last",
         div(
-          cls := "rok-last",
+          cls := "row invite-row",
           div(
-            cls := "row invite-row",
-            div(
-              cls := "col-md-6 col-sm-6 col-6",
-              span(
-                cls := "rock-apply",
-                p("Do you represent this program?"),
-                p("Invite people to leave reviews.")
-              )
+            cls := "col-md-6 col-sm-6 col-6",
+            span(
+              cls := "rock-apply",
+              p("Do you represent this program?"),
+              p("Invite people to leave reviews.")
+            )
+          ),
+          div(
+            cls := "col-md-6 col-sm-6 col-6",
+            button(
+              `type` := "button",
+              cls    := "rock-action-btn",
+              "Invite people",
+              disabled <-- inviteErrorBus.events.mapTo(true).startWith(false),
+              onClick.mapToUnit --> (_ => startPaymentFlow(program.id))
             ),
             div(
-              cls := "col-md-6 col-sm-6 col-6",
-              a(
-                href   := program.url,
-                target := "blank",
-                button(`type` := "button", cls := "rock-action-btn", "Invite people")
-                // TODO: invite new people to review the program
-              )
+              child.text <-- inviteErrorBus.events
             )
           )
         )
       )
     )
-  )
 
   def maybeRenderUserAction(maybeUser: Option[UserToken], reviewsSignal: Signal[List[Review]]) =
     maybeUser match {

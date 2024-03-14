@@ -1,105 +1,58 @@
 package com.misterjvm.reviewboard.pages
 
-import com.misterjvm.reviewboard.core.ZJS.*
-import com.misterjvm.reviewboard.core.*
-import com.misterjvm.reviewboard.http.requests.UpdatePasswordRequest
+import com.misterjvm.reviewboard.common.Constants
+import com.misterjvm.reviewboard.components.Anchors
+import com.misterjvm.reviewboard.core.Session
 import com.raquo.laminar.api.L.{*, given}
-import com.raquo.laminar.nodes.ReactiveHtmlElement
 import org.scalajs.dom
-import org.scalajs.dom.HTMLElement
 import zio.*
 
-final case class ChangePasswordState(
-    password: String = "",
-    newPassword: String = "",
-    confirmPassword: String = "",
-    upstreamStatus: Option[Either[String, String]] = None,
-    override val showStatus: Boolean = false
-) extends FormState {
-  override val errorList: List[Option[String]] =
-    List(
-      Option.when(password.isEmpty)("Password can't be empty"),
-      Option.when(newPassword.isEmpty)("Confirm password can't be empty"),
-      Option.when(newPassword != confirmPassword)("Passwords must match")
-    ) ++ upstreamStatus.map(_.left.toOption).toList
+object ProfilePage {
 
-  override def maybeSuccess: Option[String] =
-    upstreamStatus.flatMap(_.toOption)
-}
-
-object ProfilePage extends FormPage[ChangePasswordState]("Profile") {
-  override def basicState = ChangePasswordState()
-
-  def submitter(email: String) = Observer[ChangePasswordState] { state =>
-    if (state.hasErrors) {
-      stateVar.update(_.copy(showStatus = true))
-    } else {
-      useBackend(
-        _.user.updatePasswordEndpoint(
-          UpdatePasswordRequest(email, state.password, state.newPassword)
-        )
-      ).map { userResponse =>
-        stateVar.update(
-          _.copy(
-            showStatus = true,
-            upstreamStatus = Some(Right("Password successfully changed."))
+  def apply() =
+    div(
+      cls := "row",
+      div(
+        cls := "col-md-5 p-0",
+        div(
+          cls := "logo",
+          img(
+            cls := "home-logo",
+            src := Constants.logoImage,
+            alt := "Nothing but Net"
           )
         )
-      }.tapError { e =>
-        ZIO.succeed {
-          stateVar.update(
-            _.copy(
-              showStatus = true,
-              upstreamStatus = Some(Left(e.getMessage()))
-            )
-          )
-        }
-      }.runJS
-    }
+      ),
+      div(
+        cls := "col-md-7",
+        div(
+          cls := "form-section",
+          child <-- Session.userState.signal.map {
+            case None    => renderInvalid()
+            case Some(_) => renderContent()
+          }
+        )
+      )
+    )
+
+  private def renderInvalid() = {
+    div(
+      cls := "top-section",
+      h1(span("Tech!")),
+      div("Hold up! You haven't checked into the game yet. Log in to see your profile.")
+    )
   }
 
-  override def renderChildren(): List[ReactiveHtmlElement[HTMLElement]] =
-    Session.getUserState
-      .map(_.email)
-      .map(email =>
-        List(
-          renderInput(
-            "Password",
-            "password-input",
-            "password",
-            true,
-            "Your password",
-            (s, p) => s.copy(password = p, showStatus = false, upstreamStatus = None)
-          ),
-          renderInput(
-            "New Password",
-            "new-password-input",
-            "password",
-            true,
-            "New password",
-            (s, p) => s.copy(newPassword = p, showStatus = false, upstreamStatus = None)
-          ),
-          renderInput(
-            "Confirm Password",
-            "confirm-password-input",
-            "password",
-            true,
-            "Confirm password",
-            (s, p) => s.copy(confirmPassword = p, showStatus = false, upstreamStatus = None)
-          ),
-          button(
-            `type` := "button",
-            "Change Password",
-            onClick.preventDefault.mapTo(stateVar.now()) --> submitter(email)
-          )
-        )
+  private def renderContent() =
+    div(
+      cls := "top-section",
+      h1(span("Profile")),
+      // change password section
+      div(
+        cls := "profile-section",
+        h3(span("Account Settings")),
+        Anchors.renderNavLink("Change Password", "/changepassword")
       )
-      .getOrElse(
-        List(
-          div(
-            cls := "centered-text",
-            "Hold up! You haven't checked into the game yet. Log in to see your profile."
-          )
-        )
-      )
+      // actions section - send invites for every program they have invites for
+    )
 }

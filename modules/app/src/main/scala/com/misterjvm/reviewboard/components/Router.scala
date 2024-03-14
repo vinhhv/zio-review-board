@@ -7,13 +7,15 @@ import frontroute.*
 import org.scalajs.dom
 
 object Router {
+  val externalUrlBus = EventBus[String]()
+
   def apply() =
-    mainTag( // <main>
+    mainTag(
+      onMountCallback(ctx => externalUrlBus.events.foreach(url => dom.window.location.href = url)(ctx.owner)),
       routes(
         div(
           cls := "container-fluid",
-          // potential children
-          (pathEnd | path("programs")) { // localhost:1234/ or localhost:8080/ or localhost:1234/programs
+          (pathEnd | path("programs")) {
             ProgramsPage()
           },
           path("login") {
@@ -22,8 +24,8 @@ object Router {
           path("signup") {
             SignUpPage()
           },
-          path("profile") {
-            ProfilePage()
+          path("changepassword") {
+            ChangePasswordPage()
           },
           path("forgot") {
             ForgotPasswordPage()
@@ -33,6 +35,9 @@ object Router {
           },
           path("logout") {
             LogoutPage()
+          },
+          path("profile") {
+            ProfilePage()
           },
           path("post") {
             CreateProgramPage()

@@ -16,6 +16,8 @@ trait BackendClient {
   val program: ProgramEndpoints
   val user: UserEndpoints
   val review: ReviewEndpoints
+  val invite: InviteEndpoints
+
   def endpointRequestZIO[I, E <: Throwable, O](endpoint: Endpoint[Unit, I, E, O, Any])(payload: I): Task[O]
 
   def secureEndpointRequestZIO[I, E <: Throwable, O](endpoint: Endpoint[String, I, E, O, Any])(payload: I): Task[O]
@@ -29,6 +31,7 @@ class BackendClientLive(
   override val program: ProgramEndpoints = new ProgramEndpoints {}
   override val user: UserEndpoints       = new UserEndpoints {}
   override val review: ReviewEndpoints   = new ReviewEndpoints {}
+  override val invite: InviteEndpoints   = new InviteEndpoints {}
 
   private def endpointRequest[I, E, O](endpoint: Endpoint[Unit, I, E, O, Any]): I => Request[Either[E, O], Any] =
     interpreter.toRequestThrowDecodeFailures(endpoint, config.uri)
