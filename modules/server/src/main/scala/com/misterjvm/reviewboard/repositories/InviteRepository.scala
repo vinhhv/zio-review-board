@@ -42,7 +42,7 @@ class InviteRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends In
           .filter(_.username == lift(username))
           .filter(_.nInvites > 0)
           .filter(_.active)
-        program <- query[Program] if program.id == record.id // join Program
+        program <- query[Program] if program.id == record.programId // join Program
       } yield InviteNamedRecord(program.id, program.name, record.nInvites)
     }
 

@@ -46,7 +46,7 @@ trait EmailService {
           <h1>You're invited to review ${program.name}</h1>
           <p>
             Go to
-            <a href="http://localhost:1234/programs/${program.slug}">this link</a>
+            <a href="http://localhost:1234/program/${program.slug}">this link</a>
             to add your thoughts on the app.
             <br/>
             Should just take a minute.

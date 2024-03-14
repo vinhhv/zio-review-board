@@ -1,7 +1,7 @@
 package com.misterjvm.reviewboard.pages
 
 import com.misterjvm.reviewboard.common.Constants
-import com.misterjvm.reviewboard.components.Anchors
+import com.misterjvm.reviewboard.components.{Anchors, InviteActions}
 import com.misterjvm.reviewboard.core.Session
 import com.raquo.laminar.api.L.{*, given}
 import org.scalajs.dom
@@ -52,7 +52,7 @@ object ProfilePage {
         cls := "profile-section",
         h3(span("Account Settings")),
         Anchors.renderNavLink("Change Password", "/changepassword")
-      )
-      // actions section - send invites for every program they have invites for
+      ),
+      InviteActions()
     )
 }

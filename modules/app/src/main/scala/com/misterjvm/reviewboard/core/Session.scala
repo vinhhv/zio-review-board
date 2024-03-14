@@ -28,9 +28,9 @@ object Session {
       .foreach(_ => Storage.remove(stateName))
 
     // retrieve the user token (known to be valid)
-    userState.set(
-      Storage.get[UserToken](stateName)
-    )
+    val currentToken = Storage.get[UserToken](stateName)
+    if (userState.now() != currentToken)
+      userState.set(currentToken)
   }
 
   def clearUserState(): Unit = {
