@@ -13,7 +13,7 @@ class InviteController private (inviteService: InviteService, jwtService: JWTSer
     extends BaseController
     with InviteEndpoints {
 
-  val addPack =
+  val addPack: ServerEndpoint[Any, Task] =
     addPackEndpoint
       .serverSecurityLogic[UserID, Task](token => jwtService.verifyToken(token).either)
       .serverLogic { token => request =>
@@ -23,7 +23,7 @@ class InviteController private (inviteService: InviteService, jwtService: JWTSer
           .either
       }
 
-  val invite =
+  val invite: ServerEndpoint[Any, Task] =
     invitedEndpoint
       .serverSecurityLogic[UserID, Task](token => jwtService.verifyToken(token).either)
       .serverLogic { token => request =>
@@ -38,14 +38,14 @@ class InviteController private (inviteService: InviteService, jwtService: JWTSer
           .either
       }
 
-  val getByUserId =
+  val getByUserId: ServerEndpoint[Any, Task] =
     getByUserIdEndpoint
       .serverSecurityLogic[UserID, Task](token => jwtService.verifyToken(token).either)
       .serverLogic { token => _ =>
         inviteService.getByUsername(token.email).either
       }
 
-  val addPackPromoted =
+  val addPackPromoted: ServerEndpoint[Any, Task] =
     addPackPromotedEndpoint
       .serverSecurityLogic[UserID, Task](token => jwtService.verifyToken(token).either)
       .serverLogic { token => request =>
@@ -59,7 +59,16 @@ class InviteController private (inviteService: InviteService, jwtService: JWTSer
           .either
       }
 
-  override val routes: List[ServerEndpoint[Any, Task]] = List(addPack, addPackPromoted, getByUserId, invite)
+  val webhook: ServerEndpoint[Any, Task] =
+    webhookEndpoint
+      .serverLogic { (signature, payload) =>
+        paymentService
+          .handleWebhookEvent(signature, payload, packId => inviteService.activatePack(packId.toLong))
+          .unit
+          .either
+      }
+
+  override val routes: List[ServerEndpoint[Any, Task]] = List(addPack, addPackPromoted, webhook, getByUserId, invite)
 }
 
 object InviteController {

@@ -1,15 +1,15 @@
 package com.misterjvm.reviewboard.services
 
+import com.misterjvm.reviewboard.config.{Configs, InvitePackConfig}
 import com.misterjvm.reviewboard.domain.data.InviteNamedRecord
 import com.misterjvm.reviewboard.repositories.{InviteRepository, ProgramRepository}
 import zio.*
-import com.misterjvm.reviewboard.config.InvitePackConfig
-import com.misterjvm.reviewboard.config.Configs
 
 trait InviteService {
   def getByUsername(username: String): Task[List[InviteNamedRecord]]
   def sendInvites(username: String, programId: Long, receivers: List[String]): Task[Int]
   def addInvitePack(username: String, programId: Long): Task[Long]
+  def activatePack(id: Long): Task[Boolean]
 }
 
 class InviteServiceLive private (
@@ -32,8 +32,6 @@ class InviteServiceLive private (
         case Some(_) => ZIO.fail(new RuntimeException("You already have an active pack for this program"))
         case None    => inviteRepo.addInvitePack(username, programId, config.nInvites)
       }
-      // TODO: remove when introducing payment process
-      _ <- inviteRepo.activatePack(newPackId)
     } yield newPackId
 
   override def sendInvites(username: String, programId: Long, receivers: List[String]): Task[Int] =
@@ -50,6 +48,9 @@ class InviteServiceLive private (
           .map(receiver => emailService.sendReviewInvite(username, receiver, program))
       )
     } yield nInvitesUsed
+
+  override def activatePack(id: Long): Task[Boolean] =
+    inviteRepo.activatePack(id)
 }
 
 object InviteServiceLive {

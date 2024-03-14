@@ -1,8 +1,9 @@
 package com.misterjvm.reviewboard.config
 
 final case class StripeConfig(
-    price: String, // price ID in Stripe
     key: String,
+    secret: String, // webhook secret
+    price: String,  // price ID in Stripe
     successUrl: String,
     cancelUrl: String
 )
