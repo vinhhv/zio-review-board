@@ -94,3 +94,10 @@ CREATE TABLE IF NOT EXISTS invites (
 );
 
 INSERT INTO invites(username, program_id, n_invites, active) VALUES ('vinh@misterjvm.com', 1, 10, true);
+
+CREATE TABLE IF NOT EXISTS review_summaries (
+  program_id BIGINT NOT NULL PRIMARY KEY,
+  contents TEXT,
+  created TIMESTAMP NOT NULL DEFAULT now()
+);
+  

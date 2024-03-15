@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.http.endpoints
 
-import com.misterjvm.reviewboard.domain.data.Review
+import com.misterjvm.reviewboard.domain.data.{Review, ReviewSummary}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import sttp.tapir.*
 import sttp.tapir.generic.auto.*
@@ -51,4 +51,22 @@ trait ReviewEndpoints extends BaseEndpoint {
       .get
       .out(jsonBody[List[Review]])
 
+  // summary endpoints
+  val getSummaryEndpoint =
+    baseEndpoint
+      .tag("Reviews")
+      .name("get summary by program id")
+      .description("Get current review summary for a program id")
+      .in("reviews" / "program" / path[Long]("id") / "summary")
+      .get
+      .out(jsonBody[Option[ReviewSummary]])
+
+  val makeSummaryEndpoint =
+    baseEndpoint
+      .tag("Reviews")
+      .name("generate summary by program id")
+      .description("Trigger review summary creation for a program id")
+      .in("reviews" / "program" / path[Long]("id") / "summary")
+      .post
+      .out(jsonBody[Option[ReviewSummary]])
 }

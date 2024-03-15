@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.services
 
-import com.misterjvm.reviewboard.domain.data.Review
+import com.misterjvm.reviewboard.domain.data.{Review, ReviewSummary}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import com.misterjvm.reviewboard.repositories.ReviewRepository
 import zio.*
@@ -13,6 +13,8 @@ trait ReviewService {
   def getByProgramId(programId: Long): Task[List[Review]]
   def getByProgramSlug(programSlug: String): Task[List[Review]]
   def getByUserId(userId: Long): Task[List[Review]]
+  def getSummary(programId: Long): Task[Option[ReviewSummary]]
+  def makeSummary(programId: Long): Task[Option[ReviewSummary]]
 }
 
 class ReviewServiceLive private (repo: ReviewRepository) extends ReviewService {
@@ -47,6 +49,10 @@ class ReviewServiceLive private (repo: ReviewRepository) extends ReviewService {
 
   override def getByUserId(userId: Long): Task[List[Review]] =
     repo.getByUserId(userId)
+
+  override def getSummary(programId: Long): Task[Option[ReviewSummary]] = ???
+
+  override def makeSummary(programId: Long): Task[Option[ReviewSummary]] = ???
 }
 
 object ReviewServiceLive {

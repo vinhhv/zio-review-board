@@ -78,3 +78,10 @@ CREATE TABLE IF NOT EXISTS invites (
   n_invites INT NOT NULL,
   active BOOLEAN NOT NULL DEFAULT false
 );
+
+CREATE TABLE IF NOT EXISTS review_summaries (
+  program_id BIGINT NOT NULL PRIMARY KEY,
+  contents TEXT,
+  created TIMESTAMP NOT NULL DEFAULT now()
+);
+  

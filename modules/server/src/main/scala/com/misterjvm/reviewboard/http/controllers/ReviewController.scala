@@ -23,8 +23,14 @@ class ReviewController private (service: ReviewService, jwtService: JWTService)
   val getByProgramSlug: ServerEndpoint[Any, Task] =
     getByProgramSlugEndpoint.serverLogic(programSlug => service.getByProgramSlug(programSlug).either)
 
+  val getSummary: ServerEndpoint[Any, Task] =
+    getSummaryEndpoint.serverLogic(programId => service.getSummary(programId).either)
+
+  val makeSummary: ServerEndpoint[Any, Task] =
+    makeSummaryEndpoint.serverLogic(programId => service.makeSummary(programId).either)
+
   override val routes: List[ServerEndpoint[Any, Task]] =
-    List(create, getById, getByProgramSlug, getByProgramId)
+    List(getSummary, makeSummary, create, getById, getByProgramSlug, getByProgramId)
 }
 
 object ReviewController {
