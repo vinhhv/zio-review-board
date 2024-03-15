@@ -87,12 +87,19 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
             if (isRequired) span("*") else span(),
             name
           ),
-          input(
-            `type` := "file",
-            cls    := "form-control",
-            idAttr := uid,
-            accept := "image/*",
-            onChange.mapToFiles --> fileUploader
+          div(
+            cls := "image-upload",
+            input(
+              `type` := "file",
+              cls    := "form-control",
+              idAttr := uid,
+              accept := "image/*",
+              onChange.mapToFiles --> fileUploader
+            ),
+            img(
+              cls := "image-upload-thumbnail",
+              src <-- stateVar.signal.map(_.image.getOrElse(Constants.programLogoPlaceholder))
+            )
           )
         )
       )
@@ -143,9 +150,6 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
       renderInput("Program Name", "name", "text", true, "PJF Performance", (s, v) => s.copy(name = v)),
       renderInput("Program URL", "url", "text", true, "https://pjfperformance.com", (s, v) => s.copy(url = v)),
       renderLogoUpload("Program logo", "logo"),
-      img(
-        src <-- stateVar.signal.map(_.image.getOrElse(""))
-      ),
       // TODO: Select from drawdown after pulling options from database
       renderInput("Program Trainer", "trainer", "number", true, "1", (s, v) => s.copy(trainerId = v)),
       // TODO: Select from drawdown from hard-coded values

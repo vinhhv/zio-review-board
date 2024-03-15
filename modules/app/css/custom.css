@@ -53,3 +53,15 @@
   padding: 1rem 0;
   background: white;
 }
+
+.image-upload {
+  display: flex;
+  align-items: center;
+}
+
+.image-upload-thumbnail {
+  max-height: 4rem;
+  max-width: 4rem;
+  border: 1px solid var(--background-color);
+  margin-left: 1rem;
+}
