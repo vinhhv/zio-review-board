@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   support metric_score NOT NULL,
   would_recommend metric_score NOT NULL,
   review TEXT NOT NULL,
-  created TIMESTAMP NOT NULL DEFAULT now(),
-  updated TIMESTAMP NOT NULL DEFAULT now()
+  created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 CREATE OR REPLACE FUNCTION update_modified_column()
@@ -82,6 +82,6 @@ CREATE TABLE IF NOT EXISTS invites (
 CREATE TABLE IF NOT EXISTS review_summaries (
   program_id BIGINT NOT NULL PRIMARY KEY,
   contents TEXT,
-  created TIMESTAMP NOT NULL DEFAULT now()
+  created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
   

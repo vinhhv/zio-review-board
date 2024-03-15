@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   support metric_score NOT NULL,
   would_recommend metric_score NOT NULL,
   review TEXT NOT NULL,
-  created TIMESTAMP NOT NULL DEFAULT now(),
-  updated TIMESTAMP NOT NULL DEFAULT now()
+  created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 INSERT INTO reviews(program_id, program_slug, user_id, value, quality, content, user_experience, accessibility, support, would_recommend, review) VALUES(1, 'pjf-performance-unranked-academy', 1, 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Absolutely the best program out there for all hoopers!');
@@ -98,6 +98,6 @@ INSERT INTO invites(username, program_id, n_invites, active) VALUES ('vinh@miste
 CREATE TABLE IF NOT EXISTS review_summaries (
   program_id BIGINT NOT NULL PRIMARY KEY,
   contents TEXT,
-  created TIMESTAMP NOT NULL DEFAULT now()
+  created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
   
