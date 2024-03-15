@@ -6,6 +6,7 @@ import io.getquill.jdbczio.Quill
 import zio.*
 
 trait TrainerRepository {
+  def getAll: Task[List[Trainer]]
   def getById(id: Long): Task[Option[Trainer]]
 }
 
@@ -15,6 +16,11 @@ class TrainerRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends T
   inline given schema: SchemaMeta[Trainer]  = schemaMeta[Trainer]("trainers")
   inline given insMeta: InsertMeta[Trainer] = insertMeta[Trainer](_.id)
   inline given upMeta: UpdateMeta[Trainer]  = updateMeta[Trainer](_.id)
+
+  override def getAll: Task[List[Trainer]] =
+    run {
+      query[Trainer]
+    }
 
   override def getById(id: Long): Task[Option[Trainer]] =
     run {

@@ -9,6 +9,7 @@ import com.raquo.laminar.nodes.ReactiveHtmlElement
 import frontroute.BrowserNavigation
 import org.scalajs.dom
 import zio.*
+import org.scalajs.dom.HTMLDivElement
 
 trait FormState {
   def errorList: List[Option[String]]
@@ -29,8 +30,11 @@ abstract class FormPage[S <: FormState](title: String) {
 
   def renderChildren(): List[ReactiveHtmlElement[dom.html.Element]]
 
-  def apply() =
+  def doNothing(): Unit = ()
+
+  def apply(mountCallback: () => Unit = doNothing) =
     div(
+      onMountCallback(_ => mountCallback()),
       onUnmountCallback(_ => stateVar.set(basicState)),
       cls := "row",
       div(
@@ -104,6 +108,39 @@ abstract class FormPage[S <: FormState](title: String) {
             placeholder := placeHolder,
             onInput.mapToValue --> stateVar.updater(updateFn)
           )
+        )
+      )
+    )
+
+  final case class SelectOption(value: String, text: String)
+
+  def renderSelectInput(
+      name: String,
+      uid: String,
+      isRequired: Boolean,
+      options: List[SelectOption],
+      valueFn: (S => String),
+      updateFn: (S, String) => S
+  ): ReactiveHtmlElement[HTMLDivElement] =
+    div(
+      cls := "row",
+      div(
+        cls := "col-md-12",
+        div(
+          cls := "form-input",
+          label(
+            forId := uid,
+            cls   := "form-label",
+            if (isRequired) span("*") else span(),
+            name
+          )
+        ),
+        select(
+          options.map { opt =>
+            option(value := opt.value, opt.text)
+          },
+          value <-- stateVar.signal.map(valueFn),
+          onChange.mapToValue --> stateVar.updater(updateFn)
         )
       )
     )

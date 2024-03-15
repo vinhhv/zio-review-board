@@ -2,13 +2,13 @@ package com.misterjvm.reviewboard.pages
 
 import com.misterjvm.reviewboard.common.Constants
 import com.misterjvm.reviewboard.core.ZJS.*
-import com.misterjvm.reviewboard.domain.data.PaymentType
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Trainer}
+import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import com.raquo.laminar.api.L.{*, given}
 import com.raquo.laminar.nodes.ReactiveHtmlElement
 import org.scalajs.dom
 import org.scalajs.dom.*
 import org.scalajs.dom.html.Element
-import com.misterjvm.reviewboard.http.requests.CreateProgramRequest
 import zio.*
 
 final case class CreateProgramState(
@@ -19,6 +19,7 @@ final case class CreateProgramState(
     image: Option[String] = None,
     tags: List[String] = List(),
     upstreamStatus: Option[Either[String, String]] = None,
+    trainers: List[Trainer] = List(),
     override val showStatus: Boolean = false
 ) extends FormState {
   def errorList: List[Option[String]] =
@@ -46,6 +47,32 @@ final case class CreateProgramState(
 
 object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program") {
   override def basicState: CreateProgramState = CreateProgramState()
+
+  def getTrainers(): Unit =
+    useBackend(_.user.getTrainersEndpoint(()))
+      .map { trainers =>
+        stateVar.update(
+          _.copy(
+            showStatus = false,
+            trainers = trainers
+          )
+        )
+      }
+      .tapError(e =>
+        ZIO.succeed {
+          stateVar.update(
+            _.copy(
+              showStatus = true,
+              upstreamStatus = Some(Left(e.getMessage()))
+            )
+          )
+        }
+      )
+      .runJS
+
+  def apply() = {
+    super.apply(getTrainers)
+  }
 
   val submitter = Observer[CreateProgramState] { state =>
     if (state.hasErrors) {
@@ -150,10 +177,24 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
       renderInput("Program Name", "name", "text", true, "PJF Performance", (s, v) => s.copy(name = v)),
       renderInput("Program URL", "url", "text", true, "https://pjfperformance.com", (s, v) => s.copy(url = v)),
       renderLogoUpload("Program logo", "logo"),
-      // TODO: Select from drawdown after pulling options from database
-      renderInput("Program Trainer", "trainer", "number", true, "1", (s, v) => s.copy(trainerId = v)),
-      // TODO: Select from drawdown from hard-coded values
-      renderInput("Payment Type", "payment_type", "number", true, "0", (s, v) => s.copy(paymentType = v)),
+      div(child <-- stateVar.signal.map { s =>
+        val options = s.trainers.map { trainer =>
+          SelectOption(trainer.id.toString, trainer.name)
+        }
+        renderSelectInput("Program Trainer", "trainer", true, options, _.trainerId, (s, v) => s.copy(trainerId = v))
+      }),
+      renderSelectInput(
+        "Payment Type",
+        "payment_type",
+        true,
+        List(
+          SelectOption("0", "Lifetime Access"),
+          SelectOption("1", "Subscription"),
+          SelectOption("2", "Lifetime Access or Subscription")
+        ),
+        _.paymentType,
+        (s, v) => s.copy(paymentType = v)
+      ),
       renderInput(
         "Tags - separate by ','",
         "tags",
@@ -167,11 +208,5 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
         "Post Program",
         onClick.preventDefault.mapTo(stateVar.now()) --> submitter
       )
-      // name
-      // url
-      // logo - file upload
-      // trainer
-      // payment type
-      // tags
     )
 }

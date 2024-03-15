@@ -67,6 +67,10 @@ class UserController private (userService: UserService, jwtService: JWTService)
           .either
       }
 
+  val getAllTrainers: ServerEndpoint[Any, Task] =
+    getTrainersEndpoint
+      .serverLogic { _ => userService.getAllTrainers.either }
+
   override val routes: List[ServerEndpoint[Any, Task]] =
     List(
       create,
@@ -74,7 +78,8 @@ class UserController private (userService: UserService, jwtService: JWTService)
       delete,
       login,
       forgotPassword,
-      recoverPassword
+      recoverPassword,
+      getAllTrainers
     )
 }
 

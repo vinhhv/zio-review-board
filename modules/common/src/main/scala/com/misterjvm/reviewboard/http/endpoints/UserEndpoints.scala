@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.http.endpoints
 
-import com.misterjvm.reviewboard.domain.data.UserToken
+import com.misterjvm.reviewboard.domain.data.{Trainer, UserToken}
 import com.misterjvm.reviewboard.http.requests.*
 import com.misterjvm.reviewboard.http.responses.UserResponse
 import sttp.tapir.*
@@ -72,4 +72,13 @@ trait UserEndpoints extends BaseEndpoint with EndpointConstants {
       .in(USERS_ENDPOINT / "recover")
       .post
       .in(jsonBody[RecoverPasswordRequest])
+
+  val getTrainersEndpoint =
+    baseEndpoint
+      .tag("Trainers")
+      .name("get trainers")
+      .description("Get all trainers")
+      .in(USERS_ENDPOINT / "trainers")
+      .get
+      .out(jsonBody[List[Trainer]])
 }

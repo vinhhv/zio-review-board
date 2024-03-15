@@ -8,6 +8,8 @@ import zio.*
 import java.security.SecureRandom
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
+import com.misterjvm.reviewboard.repositories.TrainerRepository
+import com.misterjvm.reviewboard.domain.data.Trainer
 
 trait UserService {
   def registerUser(email: String, password: String): Task[User]
@@ -19,13 +21,16 @@ trait UserService {
   // Password recovery flow
   def sendPasswordRecoveryToken(email: String): Task[Unit]
   def recoverPasswordFromToken(email: String, token: String, newPassword: String): Task[Boolean]
+
+  def getAllTrainers: Task[List[Trainer]]
 }
 
 class UserServiceLive private (
     jwtService: JWTService,
     emailService: EmailService,
     userRepo: UserRepository,
-    tokenRepo: RecoveryTokensRepository
+    tokenRepo: RecoveryTokensRepository,
+    trainerRepo: TrainerRepository
 ) extends UserService {
 
   override def registerUser(email: String, password: String): Task[User] =
@@ -110,6 +115,8 @@ class UserServiceLive private (
           .when(isTokenValid)
           .map(_.nonEmpty)
     } yield wasPasswordRecovered
+
+  override def getAllTrainers: Task[List[Trainer]] = trainerRepo.getAll
 }
 
 object UserServiceLive {
@@ -119,7 +126,8 @@ object UserServiceLive {
       emailService <- ZIO.service[EmailService]
       userRepo     <- ZIO.service[UserRepository]
       tokenRepo    <- ZIO.service[RecoveryTokensRepository]
-    } yield new UserServiceLive(jwtService, emailService, userRepo, tokenRepo)
+      trainerRepo  <- ZIO.service[TrainerRepository]
+    } yield new UserServiceLive(jwtService, emailService, userRepo, tokenRepo, trainerRepo)
   }
 
   def nonexistentUserError(email: String): RuntimeException = UnauthorizedException(
