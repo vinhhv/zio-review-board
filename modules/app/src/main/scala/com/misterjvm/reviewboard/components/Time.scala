@@ -25,4 +25,7 @@ object MomentLib extends js.Object {
 object Time {
   def unix2hr(millis: Long) =
     MomentLib.unix(millis / 1000).fromNow()
+
+  def past(millis: Long) =
+    new Date().getTime.toLong - millis
 }
