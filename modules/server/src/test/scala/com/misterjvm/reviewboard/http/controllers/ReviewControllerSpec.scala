@@ -1,6 +1,6 @@
 package com.misterjvm.reviewboard.http.controllers
 
-import com.misterjvm.reviewboard.domain.data.{DataFixtures, MetricScore, Review, User, UserID, UserToken}
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, MetricScore, Review, ReviewSummary, User, UserID, UserToken}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import com.misterjvm.reviewboard.services.{JWTService, ReviewService}
 import com.misterjvm.reviewboard.syntax.*
@@ -14,6 +14,8 @@ import sttp.tapir.ztapir.RIOMonadError
 import zio.json.*
 import zio.test.*
 import zio.{Task, _}
+
+import java.time.Instant
 
 object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
 
@@ -47,6 +49,12 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
         if (programSlug == goodReview.programSlug) List(goodReview)
         else List()
       }
+
+    override def getSummary(programId: Long): Task[Option[ReviewSummary]] =
+      ZIO.none
+
+    override def makeSummary(programId: Long): Task[Option[ReviewSummary]] =
+      ZIO.none
   }
 
   private val jwtServiceStub = new JWTService {

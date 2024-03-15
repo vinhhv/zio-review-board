@@ -1,10 +1,13 @@
 package com.misterjvm.reviewboard.services
 
-import com.misterjvm.reviewboard.domain.data.{DataFixtures, Review}
+import com.misterjvm.reviewboard.config.SummaryConfig
+import com.misterjvm.reviewboard.domain.data.{DataFixtures, Review, ReviewSummary}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import com.misterjvm.reviewboard.repositories.ReviewRepository
 import zio.*
 import zio.test.*
+
+import java.time.Instant
 
 object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
 
@@ -43,7 +46,24 @@ object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
           if (programSlug == goodReview.programSlug) List(goodReview)
           else List()
         }
+
+      override def getSummary(programId: Long): Task[Option[ReviewSummary]] =
+        ZIO.none
+
+      override def insertSummary(programId: Long, summary: String): Task[ReviewSummary] =
+        ZIO.succeed(ReviewSummary(programId, summary, Instant.now()))
     }
+
+  }
+
+  val stubReviewSummaryService = ZLayer.succeed {
+    new OpenAIService {
+      override def getCompletion(prompt: String): Task[Option[String]] = ZIO.none
+    }
+  }
+
+  val summaryConfigLayer = ZLayer.succeed {
+    SummaryConfig(3, 20)
   }
 
   override def spec: Spec[TestEnvironment & Scope, Any] =
@@ -105,5 +125,5 @@ object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
           reviews.toSet == Set(goodReview, badReview) && reviewsNotFound.isEmpty
         }
       }
-    ).provide(ReviewServiceLive.layer, stubRepoLayer)
+    ).provide(ReviewServiceLive.layer, stubRepoLayer, stubReviewSummaryService, summaryConfigLayer)
 }
