@@ -1,13 +1,12 @@
 package com.misterjvm.reviewboard.services
 
+import com.misterjvm.reviewboard.config.{Configs, SummaryConfig}
 import com.misterjvm.reviewboard.domain.data.{Review, ReviewSummary}
 import com.misterjvm.reviewboard.http.requests.CreateReviewRequest
 import com.misterjvm.reviewboard.repositories.ReviewRepository
 import zio.*
 
 import java.time.Instant
-import com.misterjvm.reviewboard.config.SummaryConfig
-import com.misterjvm.reviewboard.config.Configs
 
 trait ReviewService {
   def create(request: CreateReviewRequest, userId: Long): Task[Review]

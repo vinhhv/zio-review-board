@@ -61,11 +61,30 @@ object ProgramPage {
       cls := "container-fluid the-rock",
       onMountCallback(_ => useBackend(_.program.getByIdEndpoint(slug)).emitTo(fetchProgramBus)),
       children <-- status.map {
-        case Status.LOADING     => List(div("Loading..."))
-        case Status.NOT_FOUND   => List(div("Program not found."))
+        case Status.LOADING     => renderLoading
+        case Status.NOT_FOUND   => renderNotFound
         case Status.OK(program) => render(program, reviewsSignal(slug))
       }
     )
+
+  def renderLoading = List(
+    div(
+      cls := "simple-titled-page",
+      h1("Loading...")
+    )
+  )
+
+  def renderNotFound = List(
+    div(
+      cls := "simple-titled-page",
+      h1("Program not found"),
+      h2("This program doesn't exist"),
+      a(
+        href := "/",
+        "Head back to home court advantage"
+      )
+    )
+  )
 
   def render(program: Program, reviewsSignal: Signal[List[Review]]) = List(
     div(

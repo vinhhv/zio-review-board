@@ -15,7 +15,8 @@ object App {
   val app = div(
     onMountCallback(_ => Session.loadUserState()),
     Header(),
-    Router()
+    Router(),
+    Footer()
   ).amend(LinkHandler.bind) // for internal links
 
   def main(args: Array[String]): Unit = {
