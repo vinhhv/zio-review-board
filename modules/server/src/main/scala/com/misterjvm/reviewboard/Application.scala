@@ -29,12 +29,13 @@ object Application extends ZIOAppDefault {
       Server.default,
       // services
       ProgramServiceLive.layer,
-      ReviewServiceLive.layer,
       UserServiceLive.layer,
       JWTServiceLive.configuredLayer,
       EmailServiceLive.configuredLayer,
       InviteServiceLive.configuredLayer,
       PaymentServiceLive.configuredLayer,
+      ReviewServiceLive.configuredLayer,
+      OpenAIServiceLive.configuredLayer,
       // repos
       ProgramRepositoryLive.layer,
       ReviewRepositoryLive.layer,
