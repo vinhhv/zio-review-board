@@ -6,8 +6,12 @@ services:
     restart: always
     volumes:
       - "./sql:/docker-entrypoint-initdb.d"
+      - db-data:/var/lib/postgresql/data
     environment:
       - "POSTGRES_USER=docker"
       - "POSTGRES_PASSWORD=docker"
     ports:
       - "5432:5432"
+
+volumes:
+  db-data:
