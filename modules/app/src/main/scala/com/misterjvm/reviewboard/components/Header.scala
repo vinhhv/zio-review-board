@@ -54,7 +54,7 @@ object Header {
       img(
         cls := "home-logo",
         src := Constants.logoImage,
-        alt := "Nothing but Net"
+        alt := "Swish Programs"
       )
     )
 

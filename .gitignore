@@ -296,3 +296,8 @@ dist
 
 # MacOS
 .DS_Store
+
+modules/app/dist-prod/
+modules/app/dist-staging/
+
+server.tar
