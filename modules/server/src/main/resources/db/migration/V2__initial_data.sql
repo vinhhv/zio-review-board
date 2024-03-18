@@ -16,6 +16,8 @@ INSERT INTO programs(slug, name, url, trainer_id, trainer_name, payment_type, im
 -- REVIEWS
 
 INSERT INTO reviews(program_id, program_slug, user_id, value, quality, content, user_experience, accessibility, support, would_recommend, review) VALUES(1, 'pjf-performance-unranked-academy', 1, 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Amazing', 'Absolutely the best program out there for all hoopers!');
+INSERT INTO reviews(program_id, program_slug, user_id, value, quality, content, user_experience, accessibility, support, would_recommend, review) VALUES(1, 'pjf-performance-unranked-academy', 1, 'Fair', 'Amazing', 'Amazing', 'Great', 'Great', 'Fair', 'Great', 'Really good program that covers all aspects of basketball, from shooting to ball handling to even the mental aspect of hooping. I just wish it was cheaper because $50/month is very expensive.');
+INSERT INTO reviews(program_id, program_slug, user_id, value, quality, content, user_experience, accessibility, support, would_recommend, review) VALUES(1, 'pjf-performance-unranked-academy', 1, 'Great', 'Amazing', 'Amazing', 'Good', 'Great', 'Good', 'Great', 'PJF is one of the best NBA trainers in the world and we are blessed with such a fantastic program that is extensive and affordable (price of a gym membership). The app is a little slow and support kinda sucks, but the content makes up for it.');
 
 -- INVITES
 
