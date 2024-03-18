@@ -72,6 +72,7 @@ class ReviewServiceLive private (repo: ReviewRepository, openAIService: OpenAISe
         }
       }
 
+  // TODO: Update prompt to give a final rating based on the averages. Use basketball terms like "SWISH!" for 5/5
   private def buildPrompt(reviews: List[Review]): Task[String] = ZIO.succeed {
     s"""
     You have the following reviews about a basketball training program:
