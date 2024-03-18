@@ -11,7 +11,7 @@ import javax.mail.{Authenticator, Message, PasswordAuthentication, Session, Tran
 trait EmailService(baseUrl: String) {
   def sendEmail(to: String, subject: String, content: String): Task[Unit]
   def sendPasswordRecoveryEmail(to: String, token: String): Task[Unit] = {
-    val subject = "Nothing But Net: Password Recovery"
+    val subject = "Swish Programs: Password Recovery"
     val content =
       s"""
         <div style="
@@ -22,7 +22,7 @@ trait EmailService(baseUrl: String) {
           font-size: 20px;
         ">
         <div>
-          <h1>Nothing But Net 🏀: Password Recovery</h1>
+          <h1>Swish Programs 🏀: Password Recovery</h1>
           <p>Your password recovery token is: <strong>$token</strong></p>
           <p>
             Go <a href="$baseUrl/recover">here</a>
@@ -35,7 +35,7 @@ trait EmailService(baseUrl: String) {
   }
 
   def sendReviewInvite(from: String, to: String, program: Program): Task[Unit] =
-    val subject = s"Nothing But Net: Invitation to review ${program.name}"
+    val subject = s"Swish Programs: Invitation to review ${program.name}"
     val content =
       s"""
         <div style="

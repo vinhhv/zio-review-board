@@ -104,7 +104,7 @@ lazy val root = (project in file("."))
 lazy val stagingBuild = (project in (file("build/staging")))
   .enablePlugins(JavaAppPackaging, DockerPlugin)
   .settings(
-    name            := "nothingbutnet-staging",
+    name            := "swishprograms-staging",
     dockerBaseImage := "openjdk:21-slim-buster", // can use a different JDK
     dockerExposedPorts ++= Seq(4041),
     Compile / mainClass         := Some("com.misterjvm.reviewboard.Application"),

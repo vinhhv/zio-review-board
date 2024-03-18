@@ -41,7 +41,7 @@ object Application extends ZIOAppDefault {
   } yield ()
 
   def program = for {
-    _ <- ZIO.log("Nothing but Net! Bootstrapping...")
+    _ <- ZIO.log("Swish Programs! Bootstrapping...")
     _ <- runMigrations
     _ <- startServer
   } yield ()

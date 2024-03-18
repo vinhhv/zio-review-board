@@ -29,7 +29,7 @@ object ProgramsPage {
         cls := "container program-list-hero",
         h1(
           cls := "program-list-title",
-          "Nothing But Net Programs"
+          "Swish Programs"
         )
       ),
       div(

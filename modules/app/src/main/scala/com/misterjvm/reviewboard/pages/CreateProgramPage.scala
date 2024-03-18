@@ -70,6 +70,8 @@ object CreateProgramPage extends FormPage[CreateProgramState]("Post New Program"
       )
       .runJS
 
+  // TODO: Only show this page for admin (hard-coded for my email for now).
+  // Otherwise, show contact form to email to be added.
   def apply() = {
     super.apply(getTrainers)
   }

@@ -44,7 +44,7 @@ abstract class FormPage[S <: FormState](title: String) {
           img(
             cls := "home-logo",
             src := Constants.logoImage,
-            alt := "Nothing but Net"
+            alt := "Swish Programs"
           )
         )
       ),
