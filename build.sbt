@@ -1,4 +1,4 @@
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+ThisBuild / version      := "1.0.0"
 ThisBuild / scalaVersion := "3.3.1"
 ThisBuild / scalacOptions ++= Seq(
   "-unchecked",
@@ -100,3 +100,14 @@ lazy val root = (project in file("."))
   )
   .aggregate(server, app)
   .dependsOn(server, app)
+
+lazy val stagingBuild = (project in (file("build/staging")))
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
+  .settings(
+    name            := "nothingbutnet-staging",
+    dockerBaseImage := "openjdk:21-slim-buster", // can use a different JDK
+    dockerExposedPorts ++= Seq(4041),
+    Compile / mainClass         := Some("com.misterjvm.reviewboard.Application"),
+    Compile / resourceDirectory := ((server / Compile / resourceDirectory).value)
+  )
+  .dependsOn(server)
