@@ -21,7 +21,15 @@ object Application extends ZIOAppDefault {
         ZIO.service[HttpConfig].map(config => ServerConfig.default.copy(address = InetSocketAddress(config.port)))
       ) >>> Server.live
 
-  val serverProgram = for {
+  def runMigrations = for {
+    flyway <- ZIO.service[FlywayService]
+    _ <- flyway.runMigrations.catchSome { case e =>
+      ZIO.logError("MIGRATIONS FAILED: " + e) *>
+        flyway.runRepairs *> flyway.runMigrations
+    }
+  } yield ()
+
+  def startServer = for {
     endpoints <- HttpAPI.endpointsZIO
     _ <- Server.serve(
       ZioHttpInterpreter(
@@ -32,8 +40,14 @@ object Application extends ZIOAppDefault {
     )
   } yield ()
 
+  def program = for {
+    _ <- ZIO.log("Nothing but Net! Bootstrapping...")
+    _ <- runMigrations
+    _ <- startServer
+  } yield ()
+
   override def run =
-    serverProgram.provide(
+    program.provide(
       configuredServer,
       // services
       ProgramServiceLive.layer,
@@ -44,6 +58,7 @@ object Application extends ZIOAppDefault {
       PaymentServiceLive.configuredLayer,
       ReviewServiceLive.configuredLayer,
       OpenAIServiceLive.configuredLayer,
+      FlywayServiceLive.configuredLayer,
       // repos
       ProgramRepositoryLive.layer,
       ReviewRepositoryLive.layer,
