@@ -1,5 +1,6 @@
 package com.misterjvm.reviewboard.core
 
+import com.misterjvm.reviewboard.common.Constants
 import com.misterjvm.reviewboard.config.BackendClientConfig
 import com.misterjvm.reviewboard.http.endpoints.*
 import sttp.capabilities.WebSockets
@@ -78,7 +79,7 @@ object BackendClientLive {
   val configuredLayer = {
     val backend                            = FetchZioBackend()
     val interpreter: SttpClientInterpreter = SttpClientInterpreter()
-    val config                             = BackendClientConfig(Some(uri"http://localhost:8080"))
+    val config                             = BackendClientConfig(Some(uri"${Constants.backendBaseUrl}"))
 
     ZLayer.succeed(backend) ++
       ZLayer.succeed(interpreter) ++

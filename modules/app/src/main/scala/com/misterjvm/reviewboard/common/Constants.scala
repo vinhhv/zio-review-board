@@ -1,7 +1,9 @@
 package com.misterjvm.reviewboard.common
 
-import scala.scalajs.js
+import org.scalajs.dom.window
+
 import scala.scalajs.js.annotation.*
+import scala.scalajs.{js, LinkingInfo}
 
 object Constants {
   @js.native
@@ -16,4 +18,8 @@ object Constants {
     """^[a-zA-Z0-9\.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"""
 
   val urlRegex = """^(https?):\/\/(([^:/?#]+)(?::(\d+))?)(\/[^?#]*)?(\?[^#]*)?(#.*)?"""
+
+  val backendBaseUrl =
+    if (LinkingInfo.developmentMode) "http://localhost:4041"
+    else window.location.origin
 }

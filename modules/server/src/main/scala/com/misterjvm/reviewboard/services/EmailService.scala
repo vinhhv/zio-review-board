@@ -8,7 +8,7 @@ import java.util.Properties
 import javax.mail.internet.MimeMessage
 import javax.mail.{Authenticator, Message, PasswordAuthentication, Session, Transport}
 
-trait EmailService {
+trait EmailService(baseUrl: String) {
   def sendEmail(to: String, subject: String, content: String): Task[Unit]
   def sendPasswordRecoveryEmail(to: String, token: String): Task[Unit] = {
     val subject = "Nothing But Net: Password Recovery"
@@ -24,6 +24,9 @@ trait EmailService {
         <div>
           <h1>Nothing But Net 🏀: Password Recovery</h1>
           <p>Your password recovery token is: <strong>$token</strong></p>
+          <p>
+            Go <a href="$baseUrl/recover">here</a>
+          </p>
           <p>Please reset your password using the token above.</p>
         </div>
       """
@@ -46,7 +49,7 @@ trait EmailService {
           <h1>You're invited to review ${program.name}</h1>
           <p>
             Go to
-            <a href="http://localhost:1234/program/${program.slug}">this link</a>
+            <a href="$baseUrl/program/${program.slug}">this link</a>
             to add your thoughts on the app.
             <br/>
             Should just take a minute.
@@ -57,7 +60,7 @@ trait EmailService {
 
 }
 
-class EmailServiceLive private (config: EmailServiceConfig) extends EmailService {
+class EmailServiceLive private (config: EmailServiceConfig) extends EmailService(config.baseUrl) {
   private val host: String = config.host
   private val port: Int    = config.port
   private val user: String = config.user

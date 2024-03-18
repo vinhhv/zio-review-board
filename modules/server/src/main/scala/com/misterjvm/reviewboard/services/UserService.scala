@@ -33,6 +33,7 @@ class UserServiceLive private (
     trainerRepo: TrainerRepository
 ) extends UserService {
 
+  // TODO: verify email with email + link
   override def registerUser(email: String, password: String): Task[User] =
     userRepo.create(
       User(
