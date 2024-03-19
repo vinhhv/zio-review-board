@@ -50,7 +50,8 @@ val serverDependencies = commonDependencies ++ Seq(
   "dev.zio"                       %% "zio-prelude"                       % "1.0.0-RC16",
   "com.auth0"                      % "java-jwt"                          % "4.2.1",
   "com.sun.mail"                   % "javax.mail"                        % javaMailVersion,
-  "com.stripe"                     % "stripe-java"                       % stripeVersion
+  "com.stripe"                     % "stripe-java"                       % stripeVersion,
+  "com.sendgrid"                   % "sendgrid-java"                     % "4.10.2"
 )
 
 lazy val foundations = (project in file("modules/foundations"))
