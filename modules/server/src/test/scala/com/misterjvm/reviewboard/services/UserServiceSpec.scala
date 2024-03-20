@@ -4,6 +4,9 @@ import com.misterjvm.reviewboard.domain.data.{User, UserID, UserToken}
 import com.misterjvm.reviewboard.repositories.{RecoveryTokensRepository, UserRepository}
 import zio.*
 import zio.test.*
+import com.misterjvm.reviewboard.repositories.TrainerRepositoryLive
+import com.misterjvm.reviewboard.repositories.TrainerRepository
+import com.misterjvm.reviewboard.domain.data.Trainer
 
 object UserServiceSpec extends ZIOSpecDefault {
 
@@ -60,8 +63,16 @@ object UserServiceSpec extends ZIOSpecDefault {
     }
   }
 
+  val stubTrainerLayer = ZLayer.succeed {
+    new TrainerRepository {
+      override def getAll: Task[List[Trainer]] = ZIO.succeed(List())
+
+      override def getById(id: Long): Task[Option[Trainer]] = ZIO.none
+    }
+  }
+
   val stubEmailsLayer = ZLayer.succeed {
-    new EmailService {
+    new EmailService("http://someurl.com") {
       override def sendEmail(to: String, subject: String, content: String): Task[Unit] = ZIO.unit
     }
   }
@@ -133,6 +144,7 @@ object UserServiceSpec extends ZIOSpecDefault {
       }
     ).provide(
       UserServiceLive.layer,
+      stubTrainerLayer,
       stubJwtLayer,
       stubRepoLayer,
       stubEmailsLayer,

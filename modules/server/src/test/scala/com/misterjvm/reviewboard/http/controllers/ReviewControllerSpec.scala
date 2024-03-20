@@ -87,7 +87,7 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
         val program = for {
           backendStub <- backendStubZIO(_.create)
           response <- basicRequest
-            .post(uri"reviews")
+            .post(uri"api/reviews")
             .body(
               CreateReviewRequest(
                 programId = 1L,
@@ -116,10 +116,10 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
         for {
           backendStub <- backendStubZIO(_.getById)
           response <- basicRequest
-            .get(uri"reviews/1")
+            .get(uri"api/reviews/1")
             .send(backendStub)
           responseNotFound <- basicRequest
-            .get(uri"reviews/999")
+            .get(uri"api/reviews/999")
             .send(backendStub)
         } yield assertTrue(
           response.body.toOption.flatMap(_.fromJson[Review].toOption).contains(goodReview) &&
@@ -130,10 +130,10 @@ object ReviewControllerSpec extends ZIOSpecDefault with DataFixtures {
         for {
           backendStub <- backendStubZIO(_.getByProgramId)
           response <- basicRequest
-            .get(uri"reviews/program/1")
+            .get(uri"api/reviews/program/1")
             .send(backendStub)
           responseNotFound <- basicRequest
-            .get(uri"reviews/program/999")
+            .get(uri"api/reviews/program/999")
             .send(backendStub)
         } yield assertTrue(
           response.body.toOption.flatMap(_.fromJson[List[Review]].toOption).contains(List(goodReview)) &&

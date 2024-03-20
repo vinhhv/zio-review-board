@@ -31,13 +31,14 @@ import sttp.tapir.ztapir.RIOMonadError
 import zio.*
 import zio.json.*
 import zio.test.*
+import com.misterjvm.reviewboard.repositories.TrainerRepositoryLive
 
 object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointConstants {
 
   private val EMAIL        = "vinh@misterjvm.com"
   private val PASSWORD     = "misterjvm"
   private val NEW_PASSWORD = "scalarulez"
-  private val USERS        = s"/${USERS_ENDPOINT}"
+  private val USERS        = s"${USERS_ENDPOINT}"
 
   override val initScript: String = "sql/integration.sql"
 
@@ -95,7 +96,7 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
       sendRequest(Method.DELETE, path, payload, Some(token))
   }
 
-  class EmailServiceProbe extends EmailService {
+  class EmailServiceProbe extends EmailService("http://someurl.com") {
     val db = collection.mutable.Map[String, String]()
     override def sendEmail(to: String, subject: String, content: String): Task[Unit] =
       ZIO.unit
@@ -111,14 +112,14 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
       test("create user") {
         for {
           backendStub   <- backendStubZIO
-          maybeResponse <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
+          maybeResponse <- backendStub.post[UserResponse](s"/api/$USERS", RegisterUserAccount(EMAIL, PASSWORD))
         } yield assertTrue(maybeResponse.contains(UserResponse(EMAIL)))
       },
       test("create and log in") {
         for {
           backendStub   <- backendStubZIO
-          maybeResponse <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
-          maybeToken    <- backendStub.post[UserToken](s"$USERS/login", LoginRequest(EMAIL, PASSWORD))
+          maybeResponse <- backendStub.post[UserResponse](s"/api/$USERS", RegisterUserAccount(EMAIL, PASSWORD))
+          maybeToken    <- backendStub.post[UserToken](s"/api/$USERS/login", LoginRequest(EMAIL, PASSWORD))
         } yield assertTrue(
           maybeToken.filter(_.email == EMAIL).nonEmpty
         )
@@ -126,18 +127,18 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
       test("change password") {
         for {
           backendStub   <- backendStubZIO
-          maybeResponse <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
+          maybeResponse <- backendStub.post[UserResponse](s"/api/$USERS", RegisterUserAccount(EMAIL, PASSWORD))
           userToken <- backendStub
-            .post[UserToken](s"$USERS/login", LoginRequest(EMAIL, PASSWORD))
+            .post[UserToken](s"/api/$USERS/login", LoginRequest(EMAIL, PASSWORD))
             .someOrFail(new RuntimeException("Authentication failed"))
           response <- backendStub
             .putAuth[UserResponse](
-              "/users/password",
+              s"/api/$USERS/password",
               UpdatePasswordRequest(EMAIL, PASSWORD, NEW_PASSWORD),
               userToken.token
             )
-          maybeOldToken <- backendStub.post[UserToken](s"$USERS/login", LoginRequest(EMAIL, PASSWORD))
-          maybeNewToken <- backendStub.post[UserToken](s"$USERS/login", LoginRequest(EMAIL, NEW_PASSWORD))
+          maybeOldToken <- backendStub.post[UserToken](s"/api/$USERS/login", LoginRequest(EMAIL, PASSWORD))
+          maybeNewToken <- backendStub.post[UserToken](s"/api/$USERS/login", LoginRequest(EMAIL, NEW_PASSWORD))
         } yield assertTrue(
           maybeOldToken.isEmpty && maybeNewToken.nonEmpty
         )
@@ -146,14 +147,14 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
         for {
           backendStub   <- backendStubZIO
           userRepo      <- ZIO.service[UserRepository]
-          maybeResponse <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
+          maybeResponse <- backendStub.post[UserResponse](s"api/$USERS", RegisterUserAccount(EMAIL, PASSWORD))
           maybeOldUser  <- userRepo.getByEmail(EMAIL)
           userToken <- backendStub
-            .post[UserToken]("/users/login", LoginRequest(EMAIL, PASSWORD))
+            .post[UserToken]("api/users/login", LoginRequest(EMAIL, PASSWORD))
             .someOrFail(new RuntimeException("Authentication failed"))
           _ <- backendStub
             .deleteAuth[UserResponse](
-              "/users",
+              "api/users",
               DeleteAccountRequest(EMAIL, PASSWORD),
               userToken.token
             )
@@ -165,16 +166,16 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
       test("recover password flow")(
         for {
           backendStub       <- backendStubZIO
-          _                 <- backendStub.post[UserResponse](USERS, RegisterUserAccount(EMAIL, PASSWORD))
-          _                 <- backendStub.postNoResponse(s"$USERS/forgot", ForgotPasswordRequest(EMAIL))
+          _                 <- backendStub.post[UserResponse](s"api/$USERS", RegisterUserAccount(EMAIL, PASSWORD))
+          _                 <- backendStub.postNoResponse(s"api/$USERS/forgot", ForgotPasswordRequest(EMAIL))
           emailServiceProbe <- ZIO.service[EmailServiceProbe]
           token <-
             emailServiceProbe
               .probeToken(EMAIL)
               .someOrFail(new RuntimeException("Token was NOT emailed!"))
-          _ <- backendStub.postNoResponse(s"$USERS/recover", RecoverPasswordRequest(EMAIL, token, "scalarulez"))
-          maybeOldToken <- backendStub.post[UserToken](s"$USERS/login", LoginRequest(EMAIL, PASSWORD))
-          maybeNewToken <- backendStub.post[UserToken](s"$USERS/login", LoginRequest(EMAIL, NEW_PASSWORD))
+          _ <- backendStub.postNoResponse(s"api/$USERS/recover", RecoverPasswordRequest(EMAIL, token, "scalarulez"))
+          maybeOldToken <- backendStub.post[UserToken](s"api/$USERS/login", LoginRequest(EMAIL, PASSWORD))
+          maybeNewToken <- backendStub.post[UserToken](s"api/$USERS/login", LoginRequest(EMAIL, NEW_PASSWORD))
         } yield assertTrue(maybeOldToken.isEmpty && maybeNewToken.nonEmpty)
       )
     ).provide(
@@ -182,6 +183,7 @@ object UserFlowSpec extends ZIOSpecDefault with RepositorySpec with EndpointCons
       JWTServiceLive.layer,
       UserRepositoryLive.layer,
       RecoveryTokensRepositoryLive.layer,
+      TrainerRepositoryLive.layer,
       emailServiceLayer,
       Repository.quillLayer,
       dataSourceLayer,

@@ -51,7 +51,7 @@ object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
         ZIO.none
 
       override def insertSummary(programId: Long, summary: String): Task[ReviewSummary] =
-        ZIO.succeed(ReviewSummary(programId, summary, Instant.now()))
+        ZIO.succeed(ReviewSummary(programId, summary, Instant.now(), Instant.now()))
     }
 
   }
@@ -63,7 +63,7 @@ object ReviewServiceSpec extends ZIOSpecDefault with DataFixtures {
   }
 
   val summaryConfigLayer = ZLayer.succeed {
-    SummaryConfig(3, 20)
+    SummaryConfig(3, 20, 86400)
   }
 
   override def spec: Spec[TestEnvironment & Scope, Any] =

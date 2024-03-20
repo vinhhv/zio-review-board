@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS invites (
 CREATE TABLE IF NOT EXISTS review_summaries (
   program_id BIGINT NOT NULL PRIMARY KEY,
   contents TEXT,
-      ZIO.succeed(ReviewSummary(programId, summary, Instant.now()))
-  created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+  created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
   

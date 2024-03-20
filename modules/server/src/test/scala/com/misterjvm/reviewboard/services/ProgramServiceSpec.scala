@@ -56,6 +56,8 @@ object ProgramServiceSpec extends ZIOSpecDefault {
 
   val stubTrainerRepoLayer = ZLayer.succeed {
     new TrainerRepository {
+      override def getAll: Task[List[Trainer]] = ZIO.succeed(List())
+
       override def getById(id: Long): Task[Option[Trainer]] =
         ZIO.succeed(Some(Trainer(1L, "trainer", "description", "https://trainer.com", None)))
     }

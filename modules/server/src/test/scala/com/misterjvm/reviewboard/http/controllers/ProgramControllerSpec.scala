@@ -79,7 +79,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
         val program = for {
           backendStub <- backendStubZIO(_.create)
           response <- basicRequest
-            .post(uri"/programs")
+            .post(uri"api/programs")
             .body(
               CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess).toJson
             )
@@ -99,7 +99,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
         val program = for {
           backendStub <- backendStubZIO(_.create)
           response <- basicRequest
-            .post(uri"/programs")
+            .post(uri"api/programs")
             .body(
               CreateProgramRequest("PJF Performance", "pjf.com", 1, PaymentType.LifetimeAccess).toJson
             )
@@ -112,7 +112,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
         val program = for {
           backendStub <- backendStubZIO(_.getAll)
           response <- basicRequest
-            .get(uri"/programs")
+            .get(uri"api/programs")
             .send(backendStub)
         } yield response.body
         program.assert("returns a list with 1 value") { respBody =>
@@ -125,7 +125,7 @@ object ProgramControllerSpec extends ZIOSpecDefault {
         val program = for {
           backendStub <- backendStubZIO(_.getById)
           response <- basicRequest
-            .get(uri"/programs/1")
+            .get(uri"api/programs/1")
             .send(backendStub)
         } yield response.body
         program.assert("returns Program with ID 1") { respBody =>
