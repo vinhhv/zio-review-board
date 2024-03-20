@@ -7,6 +7,7 @@ import com.misterjvm.reviewboard.repositories.ReviewRepository
 import zio.*
 
 import java.time.Instant
+import java.time.Duration
 
 trait ReviewService {
   def create(request: CreateReviewRequest, userId: Long): Task[Review]
@@ -55,7 +56,7 @@ class ReviewServiceLive private (repo: ReviewRepository, openAIService: OpenAISe
   override def getSummary(programId: Long): Task[Option[ReviewSummary]] =
     repo.getSummary(programId)
 
-  override def makeSummary(programId: Long): Task[Option[ReviewSummary]] =
+  private def makeSummaryCall(programId: Long): Task[Option[ReviewSummary]] =
     getByProgramId(programId)
       .flatMap(list => Random.shuffle(list))
       .map(_.take(config.nSelected))
@@ -71,6 +72,22 @@ class ReviewServiceLive private (repo: ReviewRepository, openAIService: OpenAISe
           case Some(summary) => repo.insertSummary(programId, summary).map(Some(_))
         }
       }
+
+  private def isSummaryOld(summary: ReviewSummary): Boolean = {
+    val currentTime              = Instant.now()
+    val expirationMillis         = config.expiration * 1000
+    val durationSinceLastUpdated = Duration.between(summary.updated, currentTime).toMillis()
+    durationSinceLastUpdated > expirationMillis
+  }
+
+  override def makeSummary(programId: Long): Task[Option[ReviewSummary]] = {
+    repo.getSummary(programId).flatMap {
+      case None => makeSummaryCall(programId)
+      case Some(summary) =>
+        if (isSummaryOld(summary)) makeSummary(programId)
+        else ZIO.none
+    }
+  }
 
   // TODO: Update prompt to give a final rating based on the averages. Use basketball terms like "SWISH!" for 5/5
   private def buildPrompt(reviews: List[Review]): Task[String] = ZIO.succeed {

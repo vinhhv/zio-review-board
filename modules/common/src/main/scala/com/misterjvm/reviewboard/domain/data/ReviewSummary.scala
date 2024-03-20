@@ -7,5 +7,6 @@ import java.time.Instant
 final case class ReviewSummary(
     programId: Long,
     contents: String,
-    created: Instant
+    created: Instant,
+    updated: Instant
 ) derives JsonCodec

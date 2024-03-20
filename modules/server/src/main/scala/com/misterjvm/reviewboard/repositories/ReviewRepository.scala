@@ -72,14 +72,14 @@ class ReviewRepositoryLive private (quill: Quill.Postgres[SnakeCase]) extends Re
       case None =>
         run(
           query[ReviewSummary]
-            .insertValue(lift(ReviewSummary(programId, summary, Instant.now())))
+            .insertValue(lift(ReviewSummary(programId, summary, Instant.now(), Instant.now())))
             .returning(r => r)
         )
       case Some(_) =>
         run(
           query[ReviewSummary]
             .filter(_.programId == lift(programId))
-            .updateValue(lift(ReviewSummary(programId, summary, Instant.now())))
+            .updateValue(lift(ReviewSummary(programId, summary, Instant.now(), Instant.now())))
             .returning(r => r)
         )
     }
