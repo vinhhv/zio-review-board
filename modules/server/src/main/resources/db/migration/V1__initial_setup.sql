@@ -11,6 +11,12 @@ CREATE TABLE IF NOT EXISTS recovery_tokens (
   expiration BIGINT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+  email TEXT PRIMARY KEY,
+  token TEXT NOT NULL,
+  expiration BIGINT NOT NULL
+);
+
 -- TRAINERS
 
 CREATE TABLE IF NOT EXISTS trainers (

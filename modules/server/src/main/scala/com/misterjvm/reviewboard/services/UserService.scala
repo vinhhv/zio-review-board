@@ -10,6 +10,8 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import com.misterjvm.reviewboard.repositories.TrainerRepository
 import com.misterjvm.reviewboard.domain.data.Trainer
+import com.misterjvm.reviewboard.repositories.EmailVerificationTokensRepositoryLive
+import com.misterjvm.reviewboard.repositories.EmailVerificationTokensRepository
 
 trait UserService {
   def registerUser(email: String, password: String): Task[User]
@@ -30,16 +32,17 @@ class UserServiceLive private (
     emailService: EmailService,
     userRepo: UserRepository,
     tokenRepo: RecoveryTokensRepository,
+    emailTokenRepo: EmailVerificationTokensRepository,
     trainerRepo: TrainerRepository
 ) extends UserService {
 
-  // TODO: verify email with email + link
   override def registerUser(email: String, password: String): Task[User] =
     userRepo.create(
       User(
         id = -1L,
         email = email,
-        hashedPassword = UserServiceLive.Hasher.generateHash(password)
+        hashedPassword = UserServiceLive.Hasher.generateHash(password),
+        activated = false
       )
     )
 
@@ -91,6 +94,9 @@ class UserServiceLive private (
       existingUser <- userRepo
         .getByEmail(email)
         .someOrFail(UserServiceLive.nonexistentUserError(email))
+        .filterOrElseWith(_.activated) {
+          emailTokenRepo.getToken()
+        }
       verified <- ZIO.attempt(
         UserServiceLive.Hasher.validateHash(password, existingUser.hashedPassword)
       )
@@ -123,11 +129,12 @@ class UserServiceLive private (
 object UserServiceLive {
   val layer = ZLayer {
     for {
-      jwtService   <- ZIO.service[JWTService]
-      emailService <- ZIO.service[EmailService]
-      userRepo     <- ZIO.service[UserRepository]
-      tokenRepo    <- ZIO.service[RecoveryTokensRepository]
-      trainerRepo  <- ZIO.service[TrainerRepository]
+      jwtService     <- ZIO.service[JWTService]
+      emailService   <- ZIO.service[EmailService]
+      userRepo       <- ZIO.service[UserRepository]
+      tokenRepo      <- ZIO.service[RecoveryTokensRepository]
+      emailTokenRepo <- ZIO.service[EmailVerificationTokensRepository]
+      trainerRepo    <- ZIO.service[TrainerRepository]
     } yield new UserServiceLive(jwtService, emailService, userRepo, tokenRepo, trainerRepo)
   }
 

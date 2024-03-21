@@ -10,6 +10,7 @@ import javax.mail.{Authenticator, Message, PasswordAuthentication, Session, Tran
 
 trait EmailService(baseUrl: String) {
   def sendEmail(to: String, subject: String, content: String): Task[Unit]
+
   def sendPasswordRecoveryEmail(to: String, token: String): Task[Unit] = {
     val subject = "Swish Programs: Password Recovery"
     val content =
@@ -30,6 +31,29 @@ trait EmailService(baseUrl: String) {
           <p>Please reset your password using the token above.</p>
         </div>
       """
+
+    sendEmail(to, subject, content)
+  }
+
+  def sendEmailVerificationEmail(to: String, token: String): Task[Unit] = {
+    val subject = "Swish Programs: Verify your Email"
+    val content =
+      s"""
+      <div style="
+        border: 1px solid black;
+        padding: 20px;
+        font-family: sans-serif;
+        line-height: 2;
+        font-size: 20px;
+      ">
+      <div>
+        <h1>Swish Programs 🏀: Verify your email address</h1>
+        <p>You need to verify your email address to continue using your SwishPrograms account. Click on the link below to verify your email</p>
+        <p>
+          Go <a href="$baseUrl/users/activate?token=$token">here</a>
+        </p>
+      </div>
+    """
 
     sendEmail(to, subject, content)
   }
@@ -56,6 +80,7 @@ trait EmailService(baseUrl: String) {
           </p>
         </div>
       """
+
     sendEmail(to, subject, content)
 
 }

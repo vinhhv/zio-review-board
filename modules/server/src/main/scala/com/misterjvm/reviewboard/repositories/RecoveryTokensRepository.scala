@@ -11,18 +11,6 @@ trait RecoveryTokensRepository {
   def checkToken(email: String, token: String): Task[Boolean]
 }
 
-/**
- * Verification tokens
- * 1. User signs up
- * 2. User is created in database, but deactivated
- * 2a. If user is already created, but token is still valid, show error stating account was created, check email for verification
- * 2b. If user is already created, but token is inactive, send another verification email and show status
- * 3. Email service sends email with verification link and token
- * 4. User clicks on link to verify
- * 5. Token is sent to the user service
- * 6. User is activated and asked to log in
- */
-
 class RecoveryTokensRepositoryLive private (
     config: RecoveryTokensConfig,
     quill: Quill.Postgres[SnakeCase],
