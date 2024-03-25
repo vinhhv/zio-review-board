@@ -73,7 +73,20 @@ lazy val common = crossProject(JVMPlatform, JSPlatform)
 
 lazy val server = (project in file("modules/server"))
   .settings(
-    libraryDependencies ++= serverDependencies
+    libraryDependencies ++= serverDependencies,
+    assembly / mainClass       := Some("com.misterjvm.reviewboard.Application"),
+    assembly / assemblyJarName := "swishprograms.jar",
+    assembly / assemblyMergeStrategy := {
+      case x if x.endsWith("module-info.class")                     => MergeStrategy.discard
+      case x if x.contains("io/getquill/context/")                  => MergeStrategy.first
+      case x if x.contains("io/getquill/util/TraceConfig")          => MergeStrategy.first
+      case x if x.endsWith(".tasty")                                => MergeStrategy.first
+      case x if x.contains("META-INF/io.netty.versions.properties") => MergeStrategy.first
+      case PathList("deriving.conf")                                => MergeStrategy.concat
+      case x =>
+        val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
+        oldStrategy(x)
+    }
   )
   .dependsOn(common.jvm)
 
@@ -101,14 +114,3 @@ lazy val root = (project in file("."))
   )
   .aggregate(server, app)
   .dependsOn(server, app)
-
-lazy val stagingBuild = (project in (file("build/staging")))
-  .enablePlugins(JavaAppPackaging, DockerPlugin)
-  .settings(
-    name            := "swishprograms-staging",
-    dockerBaseImage := "openjdk:21-slim-buster", // can use a different JDK
-    dockerExposedPorts ++= Seq(4041),
-    Compile / mainClass         := Some("com.misterjvm.reviewboard.Application"),
-    Compile / resourceDirectory := ((server / Compile / resourceDirectory).value)
-  )
-  .dependsOn(server)
