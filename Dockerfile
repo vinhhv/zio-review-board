@@ -1,18 +1,8 @@
-FROM eclipse-temurin:21 as jre-build
+FROM eclipse-temurin:21
 
 ### JAVA
-RUN $JAVA_HOME/bin/jlink \
-  --add-modules java.base \
-  --strip-debug \
-  --no-man-pages \
-  --no-header-files \
-  --compress=2 \
-  --output /javaruntime
-
-FROM debian:buster-slim
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
-COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
