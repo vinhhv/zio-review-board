@@ -70,7 +70,7 @@ WORKDIR /home/developer
 WORKDIR $HOME
 
 ### APP
-COPY modules/app/dist-staging/* /var/www/swishprograms.com/html
+COPY modules/app/dist-prod/* /var/www/swishprograms.com/html
 
 COPY swishprograms.jar $HOME/server.jar
 
