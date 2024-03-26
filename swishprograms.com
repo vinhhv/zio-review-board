@@ -2,10 +2,10 @@ server {
         listen 8080;
         listen [::]:8080;
 
-        root /var/www/staging.swishprograms.com/html;
+        root /var/www/swishprograms.com/html;
         index index.html index.htm index.nginx-debian.html;
 
-        server_name staging.swishprograms.com www.staging.swishprograms.com;
+        server_name swishprograms.com www.swishprograms.com;
 
         location /api {
                 proxy_pass http://localhost:4041;

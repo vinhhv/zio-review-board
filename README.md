@@ -4,7 +4,7 @@
 
 Run `sbt server/assembly`
 
-Then copy .jar file to local directory: `cp [LOCATION] swishprograms-staging_3.jar`
+Then copy .jar file to local directory: `cp [LOCATION] swishprograms.jar`
 
 ### Set fly.io secrets (do not add to git)
 

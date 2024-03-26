@@ -37,12 +37,12 @@ RUN groupadd -r developer && useradd -r -g developer -G sudo -m -s /bin/bash dev
 # RUN ufw allow 'OpenSSH'
 
 # Set up directories NGINX needs to write to
-RUN mkdir -p /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/staging.swishprograms.com/html && \
-  chown -R developer:developer /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/staging.swishprograms.com/html && \
-  chmod -R 775 /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/staging.swishprograms.com/html
+RUN mkdir -p /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/swishprograms.com/html && \
+  chown -R developer:developer /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/swishprograms.com/html && \
+  chmod -R 775 /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/swishprograms.com/html
 
-COPY staging.swishprograms.com /etc/nginx/sites-available/staging.swishprograms.com
-RUN ln -s /etc/nginx/sites-available/staging.swishprograms.com /etc/nginx/sites-enabled
+COPY swishprograms.com /etc/nginx/sites-available/swishprograms.com
+RUN ln -s /etc/nginx/sites-available/swishprograms.com /etc/nginx/sites-enabled
 RUN sed -i '/# server_names_hash_bucket_size/c\server_names_hash_bucket_size 64;' /etc/nginx/nginx.conf
 RUN sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf
 
@@ -70,9 +70,9 @@ WORKDIR /home/developer
 WORKDIR $HOME
 
 ### APP
-COPY modules/app/dist-staging/* /var/www/staging.swishprograms.com/html
+COPY modules/app/dist-staging/* /var/www/swishprograms.com/html
 
-COPY swishprograms-staging_3.jar $HOME/server.jar
+COPY swishprograms.jar $HOME/server.jar
 
 RUN java --version
 
