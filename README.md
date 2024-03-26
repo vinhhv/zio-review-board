@@ -3,17 +3,21 @@
 ### Compiling backend server
 
 Run `sbt server/assembly`
-
 Then copy .jar file to local directory: `cp [LOCATION] swishprograms.jar`
+
+### Compiling frontend
+
+Run `sbt -J-Xms2G -J-Xmx2G "project app" fullOptJS"`
+Run `cd modules/app && npm run build-prod`
 
 ### Set fly.io secrets (do not add to git)
 
 ```
 fly secrets set \
- DATABASE_JDBC_URL=postgres://postgres:dtMuZuFLxdfpdHY@swishprograms-db.flycast:5432 \
+ DATABASE_JDBC_URL=jdbc:postgresql://swishprograms-db.flycast:5432/swishprograms?sslmode=disable \
  DATABASE_USER=postgres \
  DATABASE_PASS=[FILL_IN] \
- BACKEND_HTTP_PORT=8080 \
+ BACKEND_HTTP_PORT=4041 \
  JWT_SECRET=[FILL_IN] \
  JWT_TTL=864000 \
  STRIPE_KEY=[FILL_IN] \
