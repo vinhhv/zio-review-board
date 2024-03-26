@@ -26,6 +26,8 @@ object ProgramPage {
   val fetchProgramBus     = EventBus[Option[Program]]()
   val triggerRefreshBus   = EventBus[Unit]()
 
+  val openAIExpiration = 86400
+
   def refreshReviewList(programSlug: String) =
     useBackend(_.review.getByProgramSlugEndpoint(programSlug)).toEventStream
       .mergeWith(
@@ -227,7 +229,7 @@ object ProgramPage {
           disabled <-- summaryBus.events
             .map(
               _.map(summary => Time.past(summary.updated.toEpochMilli()))
-                .map(diff => diff < 86400)
+                .map(diff => diff < openAIExpiration)
                 .getOrElse(false)
             )
             .mergeWith(buttonStatus.events.mapTo(true))
