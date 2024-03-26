@@ -29,14 +29,25 @@ RUN echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe
 RUN sudo apt update
 RUN sudo apt install -y stripe
 
+# Create non-root user
+RUN groupadd -r developer && useradd -r -g developer -G sudo -m -s /bin/bash developer
+
 ### NGINX
 # RUN ufw allow 'Nginx Full'
 # RUN ufw allow 'OpenSSH'
 
-RUN mkdir -p /var/www/staging.swishprograms.com/html
+# Set up directories NGINX needs to write to
+RUN mkdir -p /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/staging.swishprograms.com/html && \
+  chown -R developer:developer /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/staging.swishprograms.com/html && \
+  chmod -R 775 /var/log/nginx /var/lib/nginx /var/tmp/nginx /var/www/staging.swishprograms.com/html
+
 COPY staging.swishprograms.com /etc/nginx/sites-available/staging.swishprograms.com
 RUN ln -s /etc/nginx/sites-available/staging.swishprograms.com /etc/nginx/sites-enabled
 RUN sed -i '/# server_names_hash_bucket_size/c\server_names_hash_bucket_size 64;' /etc/nginx/nginx.conf
+RUN sed -i 's|pid /run/nginx.pid;|pid /tmp/nginx.pid;|' /etc/nginx/nginx.conf
+
+# Need to remove anything listening on port 80, or fly.io will deny permission
+RUN rm /etc/nginx/sites-enabled/default
 
 #### Scala
 ENV SBT_VERSION=1.9.7
@@ -49,9 +60,6 @@ RUN curl -fL https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${
 # Install Scala
 RUN curl -L "https://github.com/scala/scala3/releases/download/${SCALA_VERSION}/scala3-${SCALA_VERSION}.tar.gz" | tar xz -C /usr/local && \
   ln -s /usr/local/scala-${SCALA_VERSION}/bin/scala /usr/bin/scala
-
-# Create non-root user
-RUN groupadd -r developer && useradd -r -g developer -G sudo -m -s /bin/bash developer
 
 # Switch to the non-root user
 USER developer

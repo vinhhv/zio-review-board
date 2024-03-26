@@ -1,6 +1,6 @@
 server {
-        listen 80;
-        listen [::]:80;
+        listen 8080;
+        listen [::]:8080;
 
         root /var/www/staging.swishprograms.com/html;
         index index.html index.htm index.nginx-debian.html;
@@ -11,5 +11,5 @@ server {
                 proxy_pass http://localhost:4041;
         }
         
-        error_page 404 =200 /index.html
+        error_page 404 =200 /index.html;
 }
