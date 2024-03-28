@@ -31,6 +31,9 @@ fly secrets set \
  EMAIL_PASS=[FILL_IN] \
  EMAIL_BASE_URL=http://localhost:1234 \
  OPENAI_SECRET_KEY=[FILL_IN] \
+ SENDGRID_API_KEY=[FILL_IN] \
+ SENDGRID_BASE_URL=https://swishprograms.com \
+ SENDGRID_FROM_ADDRESS=info@swishprograms.com
 ```
 
 ### Deploy
