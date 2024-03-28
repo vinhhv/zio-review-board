@@ -38,8 +38,8 @@ trait SendGridService(baseUrl: String, fromAddress: String) {
     sendEmail(fromAddress, to, subject, content)
   }
 
-  def sendReviewInvite(to: String, program: Program): Task[Unit] = {
-    val subject = s"Swish Programs: Invitation to review ${program.name}"
+  def sendReviewInvite(username: String, to: String, program: Program): Task[Unit] = {
+    val subject = s"Swish Programs: Invitation to review ${program.name} from $username"
     val content =
       s"""
         <div style="
@@ -50,7 +50,7 @@ trait SendGridService(baseUrl: String, fromAddress: String) {
           font-size: 20px;
         ">
         <div>
-          <h1>You're invited to review ${program.name}</h1>
+          <h1>You're invited by $username to review ${program.name}</h1>
           <p>
             Go to
             <a href="$baseUrl/program/${program.slug}">this link</a>
@@ -128,7 +128,7 @@ object SendGridServiceDemo extends ZIOAppDefault {
     _ <- Clock.sleep(Duration.fromSeconds(3))
     _ <- emailService.sendPasswordRecoveryEmail("[REPLACE_ME]", "ABCD1234")
     _ <- Clock.sleep(Duration.fromSeconds(3))
-    _ <- emailService.sendReviewInvite("[REPLACE_ME]", program)
+    _ <- emailService.sendReviewInvite("vince@swishprograms.com", "[REPLACE_ME]", program)
     _ <- Console.printLine("Email done.")
   } yield ()
 

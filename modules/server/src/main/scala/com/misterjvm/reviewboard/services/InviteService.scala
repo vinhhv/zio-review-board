@@ -15,7 +15,7 @@ trait InviteService {
 class InviteServiceLive private (
     inviteRepo: InviteRepository,
     programRepo: ProgramRepository,
-    emailService: EmailService,
+    emailService: SendGridService,
     config: InvitePackConfig
 ) extends InviteService {
   override def getByUsername(username: String): Task[List[InviteNamedRecord]] =
@@ -58,7 +58,7 @@ object InviteServiceLive {
     for {
       inviteRepo   <- ZIO.service[InviteRepository]
       programRepo  <- ZIO.service[ProgramRepository]
-      emailService <- ZIO.service[EmailService]
+      emailService <- ZIO.service[SendGridService]
       config       <- ZIO.service[InvitePackConfig]
     } yield new InviteServiceLive(inviteRepo, programRepo, emailService, config)
   }

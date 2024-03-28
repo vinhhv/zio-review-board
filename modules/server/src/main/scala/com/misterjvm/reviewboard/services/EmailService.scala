@@ -34,8 +34,8 @@ trait EmailService(baseUrl: String) {
     sendEmail(to, subject, content)
   }
 
-  def sendReviewInvite(from: String, to: String, program: Program): Task[Unit] =
-    val subject = s"Swish Programs: Invitation to review ${program.name}"
+  def sendReviewInvite(username: String, to: String, program: Program): Task[Unit] =
+    val subject = s"Swish Programs: Invitation to review ${program.name} from $username"
     val content =
       s"""
         <div style="
@@ -46,7 +46,7 @@ trait EmailService(baseUrl: String) {
           font-size: 20px;
         ">
         <div>
-          <h1>You're invited to review ${program.name}</h1>
+          <h1>You're invited by $username to review ${program.name}</h1>
           <p>
             Go to
             <a href="$baseUrl/program/${program.slug}">this link</a>

@@ -53,7 +53,7 @@ object Application extends ZIOAppDefault {
       ProgramServiceLive.layer,
       UserServiceLive.layer,
       JWTServiceLive.configuredLayer,
-      EmailServiceLive.configuredLayer,
+      SendGridServiceLive.configuredLayer,
       InviteServiceLive.configuredLayer,
       PaymentServiceLive.configuredLayer,
       ReviewServiceLive.configuredLayer,

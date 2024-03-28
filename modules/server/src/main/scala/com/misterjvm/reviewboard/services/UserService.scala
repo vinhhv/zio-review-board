@@ -27,7 +27,7 @@ trait UserService {
 
 class UserServiceLive private (
     jwtService: JWTService,
-    emailService: EmailService,
+    emailService: SendGridService,
     userRepo: UserRepository,
     tokenRepo: RecoveryTokensRepository,
     trainerRepo: TrainerRepository
@@ -124,7 +124,7 @@ object UserServiceLive {
   val layer = ZLayer {
     for {
       jwtService   <- ZIO.service[JWTService]
-      emailService <- ZIO.service[EmailService]
+      emailService <- ZIO.service[SendGridService]
       userRepo     <- ZIO.service[UserRepository]
       tokenRepo    <- ZIO.service[RecoveryTokensRepository]
       trainerRepo  <- ZIO.service[TrainerRepository]
