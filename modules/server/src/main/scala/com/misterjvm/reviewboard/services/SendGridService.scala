@@ -1,18 +1,17 @@
 package com.misterjvm.reviewboard.services
 
 import com.misterjvm.reviewboard.config.{Configs, SendGridServiceConfig}
-import com.misterjvm.reviewboard.domain.data.Program
+import com.misterjvm.reviewboard.domain.data.{PaymentType, Program}
 import com.sendgrid.*
 import com.sendgrid.helpers.mail.Mail
-import com.sendgrid.helpers.mail.objects.Content
-import com.sendgrid.helpers.mail.objects.Email
+import com.sendgrid.helpers.mail.objects.{Content, Email}
 import zio.*
 
 import java.util.Properties
 import javax.mail.internet.MimeMessage
 import javax.mail.{Authenticator, Message, PasswordAuthentication, Session, Transport}
 
-trait SendGridService(baseUrl: String) {
+trait SendGridService(baseUrl: String, fromAddress: String) {
   def sendEmail(from: String, to: String, subject: String, content: String): Task[Unit]
 
   def sendPasswordRecoveryEmail(to: String, token: String): Task[Unit] = {
@@ -36,7 +35,7 @@ trait SendGridService(baseUrl: String) {
         </div>
       """
 
-    sendEmail("vince@swishprograms.com", to, subject, content)
+    sendEmail(fromAddress, to, subject, content)
   }
 
   def sendReviewInvite(to: String, program: Program): Task[Unit] = {
@@ -61,11 +60,12 @@ trait SendGridService(baseUrl: String) {
           </p>
         </div>
       """
-    sendEmail("vince@swishprograms.com", to, subject, content)
+    sendEmail(fromAddress, to, subject, content)
   }
 }
 
-class SendGridServiceLive private (config: SendGridServiceConfig) extends SendGridService(config.baseUrl) {
+class SendGridServiceLive private (config: SendGridServiceConfig)
+    extends SendGridService(config.baseUrl, config.fromAddress) {
   override def sendEmail(from: String, to: String, subject: String, content: String): Task[Unit] = {
     for {
       mail     <- createMail(from, to, subject, content)
@@ -82,7 +82,7 @@ class SendGridServiceLive private (config: SendGridServiceConfig) extends SendGr
   private def createMail(from: String, to: String, subject: String, content: String): Task[Mail] = {
     val fromEmail    = new Email(from)
     val toEmail      = new Email(to)
-    val emailContent = new Content("text/plan", content)
+    val emailContent = new Content("text/html", content)
     ZIO.succeed(new Mail(fromEmail, subject, toEmail, emailContent))
   }
 
@@ -91,22 +91,10 @@ class SendGridServiceLive private (config: SendGridServiceConfig) extends SendGr
       val request = new Request()
       request.setMethod(Method.POST)
       request.setEndpoint("mail/send")
-      request.setBaseUri(mail.build())
+      request.setBody(mail.build())
       request
     }
   }
-
-  private def createMessage(
-      session: Session
-  )(from: String, to: String, subject: String, content: String): Task[MimeMessage] = {
-    val message = new MimeMessage(session)
-    message.setFrom(from)
-    message.setRecipients(Message.RecipientType.TO, to)
-    message.setSubject(subject)
-    message.setContent(content, "text/html; charset=utf-8")
-    ZIO.succeed(message)
-  }
-
 }
 
 object SendGridServiceLive {
@@ -115,22 +103,35 @@ object SendGridServiceLive {
   }
 
   val configuredLayer =
-    Configs.makeLayer[SendGridServiceConfig]("misterjvm.email") >>> layer
+    Configs.makeLayer[SendGridServiceConfig]("misterjvm.sendgrid") >>> layer
 }
 
 object SendGridServiceDemo extends ZIOAppDefault {
-  val program = for {
+  val program = Program(
+    1L,
+    "pjf-performance-unranked-academy",
+    "PJF Performance",
+    "https://swishprograms.com/program/pjf-performance-unranked-academy",
+    1L,
+    "Paul J. Fabritz",
+    PaymentType.Subscription
+  )
+
+  val runProgram = for {
     emailService <- ZIO.service[SendGridService]
     _ <- emailService.sendEmail(
-      "vince@swishprograms.com",
-      "vvu194@gmail.com.com",
+      "info@swishprograms.com",
+      "[REPLACE_ME]",
       "Hi from MisterJVM",
       "This email service works!"
     )
-    _ <- emailService.sendPasswordRecoveryEmail("vvu194@gmail.com.com", "ABCD1234")
+    _ <- Clock.sleep(Duration.fromSeconds(3))
+    _ <- emailService.sendPasswordRecoveryEmail("[REPLACE_ME]", "ABCD1234")
+    _ <- Clock.sleep(Duration.fromSeconds(3))
+    _ <- emailService.sendReviewInvite("[REPLACE_ME]", program)
     _ <- Console.printLine("Email done.")
   } yield ()
 
   override def run: ZIO[Any & (ZIOAppArgs & Scope), Any, Any] =
-    program.provide(SendGridServiceLive.configuredLayer)
+    runProgram.provide(SendGridServiceLive.configuredLayer)
 }
