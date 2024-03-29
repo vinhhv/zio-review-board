@@ -70,7 +70,9 @@ WORKDIR /home/developer
 WORKDIR $HOME
 
 ### APP
-COPY modules/app/dist-prod/* /var/www/swishprograms.com/html
+
+# If fly.io does not pick up any changes, try deleting the trailing '/'
+COPY modules/app/dist-prod/* /var/www/swishprograms.com/html/
 
 COPY swishprograms.jar $HOME/server.jar
 

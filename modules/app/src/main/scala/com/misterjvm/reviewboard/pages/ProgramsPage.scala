@@ -29,7 +29,7 @@ object ProgramsPage {
         cls := "container program-list-hero",
         h1(
           cls := "program-list-title",
-          "Swish Programs"
+          "Swish Programs: Basketball Training Program Reviews"
         )
       ),
       div(

@@ -39,3 +39,5 @@ fly secrets set \
 ### Deploy
 
 `fly deploy`
+
+_NOTE_: The deployment might not recognize changes to modules/dist-prod/ and could ignore the new files
