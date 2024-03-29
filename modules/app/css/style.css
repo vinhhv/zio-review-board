@@ -1344,16 +1344,27 @@ main .section-1 .jvm-recent-programs-load-more-programs-btn a {
 .program-list-hero {
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	flex-direction: column;
 	height: 50.5rem;
-	background-size: 100%;
 	max-width: 100%;
-	background-position-y: -300px;
+	position: relative;
+}
+
+.program-list-hero-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%; /* Cover the full container width */
+	height: 100%; /* Cover the full container height */
+	object-fit: cover; /* Preserve aspect ratio while covering the area */
+	z-index: -1; /* Ensure it's behind the content */
 }
 
 .program-list-title {
 	color: white;
 	margin: auto;
+	z-index: 1;
 }
 
 .programs-container {

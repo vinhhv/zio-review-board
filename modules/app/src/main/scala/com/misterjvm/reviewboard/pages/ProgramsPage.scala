@@ -1,5 +1,6 @@
 package com.misterjvm.reviewboard.pages
 
+import com.misterjvm.reviewboard.common.Constants
 import com.misterjvm.reviewboard.components.*
 import com.misterjvm.reviewboard.core.ZJS.*
 import com.misterjvm.reviewboard.domain.data.Program
@@ -27,6 +28,11 @@ object ProgramsPage {
       cls := "section-1",
       div(
         cls := "container program-list-hero",
+        img(
+          cls := "program-list-hero-background",
+          src := Constants.basketballHeroImage,
+          alt := "Basketball Hero"
+        ),
         h1(
           cls := "program-list-title",
           "Swish Programs: Basketball Training Program Reviews"

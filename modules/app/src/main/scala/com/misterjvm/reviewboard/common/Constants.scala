@@ -14,6 +14,10 @@ object Constants {
   @JSImport("/static/img/generic_program.png", JSImport.Default)
   val programLogoPlaceholder: String = js.native
 
+  @js.native
+  @JSImport("/static/img/basketball_hero.jpeg", JSImport.Default)
+  val basketballHeroImage: String = js.native
+
   val emailRegex =
     """^[a-zA-Z0-9\.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"""
 

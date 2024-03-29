@@ -65,7 +65,3 @@
   border: 1px solid var(--background-color);
   margin-left: 1rem;
 }
-
-.program-list-hero {
-  background-image: url('../static/img/basketball_hero.jpeg');
-}
