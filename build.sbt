@@ -110,7 +110,7 @@ lazy val app = (project in file("modules/app"))
 
 lazy val root = (project in file("."))
   .settings(
-    name := "zio-rite-of-passage"
+    name := "swishprograms"
   )
   .aggregate(server, app)
   .dependsOn(server, app)
